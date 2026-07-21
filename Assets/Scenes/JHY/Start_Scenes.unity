@@ -560,6 +560,18 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 41a206932a4ca414ca6353b4b4afe7f9, type: 2}
   - {fileID: 11400000, guid: 2f46661fa18caba46b1802cb8d32b78c, type: 2}
   - {fileID: 11400000, guid: a6271683d85aa994c9ae84d6ca1cfc01, type: 2}
+  personalityStats:
+  - {fileID: 11400000, guid: 7f397e66779ab9f4b89cfd668603d494, type: 2}
+  - {fileID: 11400000, guid: 19c757b4b31265d4e8ca52ab9162ace0, type: 2}
+  - {fileID: 11400000, guid: ef84b9752c30c6546abe0d4d3c8ec58b, type: 2}
+  - {fileID: 11400000, guid: 5dcf5e2cff0c93b47920e69ab30fa77c, type: 2}
+  - {fileID: 11400000, guid: ff976189193e03a4f99e9bdc27cb8b03, type: 2}
+  - {fileID: 11400000, guid: bfecfc107f83bcf4795d2dbeb3057e78, type: 2}
+  - {fileID: 11400000, guid: 2add25ed19fc3734e94bbe9fbd3f22bb, type: 2}
+  - {fileID: 11400000, guid: c01ba5a1e8e024c40a496a82994daafe, type: 2}
+  - {fileID: 11400000, guid: 2fba91a9b07ff264fa38aa1a21ab838e, type: 2}
+  - {fileID: 11400000, guid: bac8f26643390f14bba1f83936a9ea19, type: 2}
+  - {fileID: 11400000, guid: f787ec7f516b4b1458e3290380361cc0, type: 2}
 --- !u!4 &488528494
 Transform:
   m_ObjectHideFlags: 0

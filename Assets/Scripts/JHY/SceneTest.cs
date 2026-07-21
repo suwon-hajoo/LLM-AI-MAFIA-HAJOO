@@ -34,7 +34,8 @@ public class SceneTest : MonoBehaviour
         {
             if (p.IsAI)
             {
-                Debug.Log($"{p.Name} : {p.Role.RoleName}");
+                // 씬이 바뀌어도 1~100 스탯 수치와 역할이 똑같이 유지되었는지 확인
+                Debug.Log($"<color=cyan>[{p.Name}]</color> 역할: <color=lime>{p.Role.RoleName}</color> | 성격: {p.Personality.GetDebugLogString()}");
             }
         }
     }

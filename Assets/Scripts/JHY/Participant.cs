@@ -1,30 +1,29 @@
 using System;
-using UnityEngine;
 
 [Serializable]
 public class Participant
 {
-    // 프로퍼티 캡슐화: 외부에서는 읽기만 가능 (get), 대입은 불가 (private set)
     public int Id { get; private set; }
     public string Name { get; private set; }
     public bool IsAI { get; private set; }
     public RoleData Role { get; private set; }
+    public PersonalityData Personality { get; private set; } //  성격 데이터
 
-    public Participant(int id, string name, bool isAI)
+    public Participant(int id, string name, bool isAI, System.Collections.Generic.List<PersonalityStatSO> statList)
     {
         Id = id;
         Name = name;
         IsAI = isAI;
+
+        // AI인 경우 프로젝트에 등록된 성격 에셋들을 기반으로 수치 생성
+        if (isAI)
+        {
+            Personality = new PersonalityData(statList);
+        }
     }
 
-    // 역할을 설정할 수 있는 공식 검증 메서드
     public void SetRole(RoleData newRole)
     {
-        if (newRole == null)
-        {
-            Debug.LogError("오류: 유효하지 않은 RoleData입니다.");
-            return;
-        }
         Role = newRole;
     }
 }
