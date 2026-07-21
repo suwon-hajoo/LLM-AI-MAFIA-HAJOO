@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c5a329912446d440ad9324e4438ee7f, type: 3}
+  m_Name: Stat_Logical
+  m_EditorClassIdentifier: Assembly-CSharp::PersonalityStatSO
+  statKey: Logical
+  statName: "\uB17C\uB9AC\uC131"
+  description: "\uAC10\uC815\uC5D0 \uD718\uB458\uB9AC\uC9C0 \uC54A\uACE0 \uC0C1\uD669\uC758
+    \uADFC\uAC70, \uC815\uD669, \uBAA8\uC21C\uC810\uC744 \uBC14\uD0D5\uC73C\uB85C
+    \uC774\uC131\uC801\uC73C\uB85C \uD310\uB2E8\uD558\uB294 \uC815\uB3C4"

@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c5a329912446d440ad9324e4438ee7f, type: 3}
+  m_Name: Stat_Mean
+  m_EditorClassIdentifier: Assembly-CSharp::PersonalityStatSO
+  statKey: Mean
+  statName: "\uC57C\uBE44\uD568"
+  description: "\uC790\uC2E0\uC758 \uC774\uB4DD\uACFC \uC0DD\uC874\uC744 \uC704\uD574
+    \uB0A8\uC744 \uBAA8\uD568\uD558\uAC70\uB098 \uBE44\uC5F4\uD558\uACE0 \uACC4\uC0B0\uC801\uC73C\uB85C
+    \uD589\uB3D9\uD558\uB294 \uC815\uB3C4"
