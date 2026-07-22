@@ -5,14 +5,19 @@ public class GameDataManager : MonoBehaviour
 {
     public static GameDataManager Instance { get; private set; }
 
-    // 인스펙터에 노출하되 외부 C# 코드에서는 변경 불가
     [Header("역할 데이터 목록")]
     [SerializeField] private List<RoleData> gameRoles = new List<RoleData>();
 
     [Header("성격 스탯 에셋 목록 (11가지 SO 파일들을 여기에 드래그)")]
     [SerializeField] private List<PersonalityStatSO> personalityStats = new List<PersonalityStatSO>();
 
-    // 외부에는 읽기 전용(IReadOnlyList)으로만 노출
+    // 💡 [추가] 사전 정의된 AI/유저용 이름 목록 ScriptableObject 에셋
+    [Header("이름 데이터 목록")]
+    [SerializeField] private NameListSO nameListSO;
+
+    // 외부용 프로퍼티 (NameInputUI 등에서 접근용)
+    public NameListSO NameListSO => nameListSO;
+
     private readonly List<Participant> _participants = new List<Participant>();
     public IReadOnlyList<Participant> Participants => _participants;
 
@@ -28,43 +33,78 @@ public class GameDataManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    // 나중에 변경 필요
     private void Start()
     {
-        // 게임이 시작되자마자 참가자 8명 생성 및 역할 무작위 분배 실행!
-        //InitializeAndAssignRoles();
+        // UI를 통해 유저 이름을 전달받고 게임을 시작할 것이므로 주석 유지
+        //InitializeAndAssignRoles("나 (User)");
     }
 
+    // 테스트용 버튼 이벤트 (기존 RoleButton 활용 - 매개변수 없을 시 기본 이름 사용)
     public void RoleButton()
     {
-        InitializeAndAssignRoles();
+        InitializeAndAssignRoles("나 (User)");
     }
 
-    // 게임 시작 시 참가자 생성 및 역할 부여 실행
-    public void InitializeAndAssignRoles()
+    // 💡 [수정] 게임 시작 시 유저 이름을 입력받도록 매개변수(userName) 추가
+    public void InitializeAndAssignRoles(string userName)
     {
         _participants.Clear();
 
-        // 1. 유저 생성
-        _participants.Add(new Participant(0, "나 (User)", false, personalityStats));
-
-        // 2. AI 7명 생성 (성격 에셋 리스트 전달하여 1~100 랜덤 부여)
-        for (int i = 1; i <= 7; i++)
+        // 💡 [추가] 유저 이름 예외 처리 (공백이나 빈 칸일 경우 기본값 지정)
+        if (string.IsNullOrWhiteSpace(userName))
         {
-            _participants.Add(new Participant(i, $"AI 봇 {i}", true, personalityStats));
+            userName = "나 (User)";
         }
 
-        // 3. 역할 배정
+        // 1. 유저 생성 (입력받은 유저 이름 적용)
+        _participants.Add(new Participant(0, userName, false, personalityStats));
+
+        // 2. 💡 [추가] AI 이름 무작위 배정 및 유저 이름 중복 방지 로직
+        List<string> availableNames = new List<string>();
+
+        if (nameListSO != null && nameListSO.Names != null)
+        {
+            availableNames = new List<string>(nameListSO.Names);
+        }
+
+        // 💡 핵심: 유저가 직접 입력했거나 선택한 이름이 목록에 있다면 AI가 쓰지 못하도록 100% 제거!
+        if (availableNames.Contains(userName))
+        {
+            availableNames.Remove(userName);
+        }
+
+        // 💡 AI 이름 목록 무작위 셔플 (Fisher-Yates 셔플)
+        for (int i = 0; i < availableNames.Count; i++)
+        {
+            int randomIndex = Random.Range(i, availableNames.Count);
+            string temp = availableNames[i];
+            availableNames[i] = availableNames[randomIndex];
+            availableNames[randomIndex] = temp;
+        }
+
+        // 3. AI 7명 생성 (중복 제거된 무작위 이름 할당)
+        for (int i = 1; i <= 7; i++)
+        {
+            // 이름 데이터가 모자랄 경우를 대비한 안전 장치
+            string aiName = (i - 1 < availableNames.Count) ? availableNames[i - 1] : $"AI 봇 {i}";
+            _participants.Add(new Participant(i, aiName, true, personalityStats));
+        }
+
+        // 4. 역할 배정
         RoleAssigner assigner = new RoleAssigner();
         assigner.AssignRoles(_participants, gameRoles);
 
-        // 4. 최초 디버그 출력
-        Debug.Log("<color=yellow>========== [초기화 완료: 역할 및 성격 스탯] ==========</color>");
+        // 5. 💡 [수정] 디버그 출력 시 유저 이름과 AI 이름이 각각 올바르게 찍히도록 변경
+        Debug.Log("<color=yellow>========== [초기화 완료: 역할, 성격, 중복 없는 이름] ==========</color>");
         foreach (var p in _participants)
         {
             if (p.IsAI)
             {
                 Debug.Log($"<color=cyan>[{p.Name}]</color> 역할: <color=lime>{p.Role.RoleName}</color> | 성격: {p.Personality.GetDebugLogString()}");
+            }
+            else
+            {
+                Debug.Log($"<color=orange>[★유저: {p.Name}]</color> 역할: <color=lime>{p.Role.RoleName}</color>");
             }
         }
     }
