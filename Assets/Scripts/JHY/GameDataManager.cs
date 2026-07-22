@@ -15,6 +15,9 @@ public class GameDataManager : MonoBehaviour
     [Header("이름 데이터 목록")]
     [SerializeField] private NameListSO nameListSO;
 
+    [Header("AI 참가자 수")]
+    [SerializeField] private int AiParticipant;
+
     // 외부용 프로퍼티 (NameInputUI 등에서 접근용)
     public NameListSO NameListSO => nameListSO;
 
@@ -82,8 +85,8 @@ public class GameDataManager : MonoBehaviour
             availableNames[randomIndex] = temp;
         }
 
-        // 3. AI 7명 생성 (중복 제거된 무작위 이름 할당)
-        for (int i = 1; i <= 7; i++)
+        // 3. AI AiParticipant명 생성 (중복 제거된 무작위 이름 할당)
+        for (int i = 1; i <= AiParticipant; i++)
         {
             // 이름 데이터가 모자랄 경우를 대비한 안전 장치
             string aiName = (i - 1 < availableNames.Count) ? availableNames[i - 1] : $"AI 봇 {i}";
