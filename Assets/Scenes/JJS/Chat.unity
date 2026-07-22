@@ -604,7 +604,7 @@ GameObject:
   - component: {fileID: 636034167}
   - component: {fileID: 636034168}
   m_Layer: 5
-  m_Name: Chat
+  m_Name: ChatPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

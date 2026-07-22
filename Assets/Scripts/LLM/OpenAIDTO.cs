@@ -18,6 +18,7 @@ public class OpenAIRequest
 public class OpenAIMessage
 {
     public string role;
+    public string name;
     public string content;
 }
 
