@@ -6,6 +6,8 @@ public class MeetingTimer : MonoBehaviour
     [Header("회의 시간")]
     [SerializeField] private float durationSeconds = 180f; // 3분 = 180초
 
+    [SerializeField] private VoteUIController voteUIController;
+
     private float currentTimer;
     private bool isTimerRunning = false;
 
@@ -61,5 +63,10 @@ public class MeetingTimer : MonoBehaviour
     private void OnTimerEnd()
     {
         Debug.Log("타이머가 종료되었습니다.");
+
+        if (voteUIController != null)
+        {
+            voteUIController.OpenVotePanel();
+        }
     }
 }
