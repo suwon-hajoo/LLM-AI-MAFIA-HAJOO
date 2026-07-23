@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class VoteUIController : MonoBehaviour
 {
@@ -163,5 +164,7 @@ public class VoteUIController : MonoBehaviour
         }
 
         if (votePanel != null) votePanel.SetActive(false);
+
+        SceneManager.LoadScene("Night_Scenes");
     }
 }
