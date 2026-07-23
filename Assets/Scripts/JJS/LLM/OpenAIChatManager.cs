@@ -12,7 +12,7 @@ using UnityEngine.Analytics;
 using UnityEngine.Networking;
 
 
-public class OpenAIChatManager:MonoBehaviour
+public class OpenAIChatManager : MonoBehaviour
 {
     private string apiKey = "";
     private string apiUrl = "https://integrate.api.nvidia.com/v1/chat/completions";
@@ -25,12 +25,12 @@ public class OpenAIChatManager:MonoBehaviour
         Instance ??= this;
     }
 
-    void Start()
+    async void Start()
     {
         
     }
 
-    public async Task<string?> SendChatRequest(GameConversation gameConversation, string userPrompt)
+    public async Task<string?> SendChatRequest(GameConversation gameConversation)
     {
         OpenAIRequest requestData = new()
         {
@@ -39,6 +39,7 @@ public class OpenAIChatManager:MonoBehaviour
         };
 
         string jsonPayload = JsonUtility.ToJson(requestData);
+        Debug.Log(jsonPayload);
         byte[] rawData = Encoding.UTF8.GetBytes(jsonPayload);
 
         using UnityWebRequest request = new(apiUrl, "POST");

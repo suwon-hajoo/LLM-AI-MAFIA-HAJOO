@@ -18,6 +18,7 @@ public class ChatController : MonoBehaviour
     {
         openAIChatManager = OpenAIChatManager.Instance;
         gameConversation = new("한국어로 대답해줘");
+        
     }
 
     public void UpdateChat()
@@ -34,8 +35,8 @@ public class ChatController : MonoBehaviour
     // 이건 테스트용
     private async void MakeAnswer(string question)
     {
-        string answer = await openAIChatManager.SendChatRequest(gameConversation, question);
         gameConversation.Add("user", "user", question);
+        string answer = await openAIChatManager.SendChatRequest(gameConversation);
         gameConversation.Add("assistant", "assistant", answer);
         GameObject clone = Instantiate(textChatPrefab, parentContent);
         clone.GetComponent<TextMeshProUGUI>().text=$"[AI] : {answer}";
