@@ -1,6 +1,5 @@
 #nullable enable
 using System.Collections.Generic;
-using Unity.VisualScripting;
 
 public class GameConversation
 {
@@ -25,5 +24,10 @@ public class GameConversation
     public void Add(string role, string name, string content)
     {
         MessageList.Add(new(){role=role, name=name, content=content});
+    }
+
+    public void AddSystemPrompt(string prompt)
+    {
+        Add("system","system", prompt);
     }
 }
