@@ -1,0 +1,206 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class AITalkScheduler : MonoBehaviour
+{
+    public static AITalkScheduler Instance { get; private set; }
+
+    [Header("글로벌 LLM 대화 쿨타임 (초)")]
+    [SerializeField] private float globalLlmCooldown = 2.0f; // 인스펙터 수정 가능
+
+    [Header("AI 개인 쿨타임 기본 설정")]
+    [SerializeField] private float basePersonalCooldown = 10.0f; // 사교성 1점일 때 쿨타임 (초)
+    [SerializeField] private float minPersonalCooldown = 3.0f;   // 사교성 100점일 때 최소 쿨타임 (초)
+    [SerializeField] private int maxTalkCountBeforeRest = 3;    // 발언 횟수 제약 (예: 3번 말하면 쿨타임)
+
+    [Header("스탯 Key 또는 Name 설정")]
+    [SerializeField] private string sociabilityStatKey = "Sociable"; // 사교성 SO Key
+    [SerializeField] private string passionStatKey = "Passionate";         // 열정 SO Key
+
+    // AI 개별 데이터 캐싱 클래스
+    private class AICooldownData
+    {
+        public Participant Participant;
+        public float CooldownEndTime = 0f;    // 쿨타임이 해제되는 절대 시각 (Time.time 기준)
+        public int RecentTalkCount = 0;       // 최근 발언 횟수
+        public float TalkWeight = 1.0f;       // 열정 스탯 기반 추첨 가중치
+        public float PersonalCooldown = 5.0f; // 사교성 스탯 기반 쿨타임 시간
+        public int SociabilityValue = 50;     // 디버그 출력용 사교성 원본 수치
+        public int PassionValue = 50;         // 디버그 출력용 열정 원본 수치
+    }
+
+    private readonly Dictionary<int, AICooldownData> aiDataMap = new Dictionary<int, AICooldownData>();
+    private bool isGlobalCooldownActive = false;
+
+    // GC 방지용 리스트 재사용
+    private readonly List<AICooldownData> candidateList = new List<AICooldownData>();
+
+    private void Awake()
+    {
+        // 💡 파괴되지 않는 싱글톤 세팅
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject); // 씬이 전환되어도 유지!
+    }
+
+    /*private void Start()
+    {
+        InitializeAIData();
+    }*/
+
+    // 💡 1. 초기 데이터 세팅 및 스탯 미리 계산 (캐싱 + 디버그 로그)
+    public void InitializeAIData()
+    {
+        aiDataMap.Clear();
+
+        if (GameDataManager.Instance == null)
+        {
+            Debug.LogError("<color=red>[오류] GameDataManager 인스턴스를 찾을 수 없습니다!</color>");
+            return;
+        }
+
+        Debug.Log("<color=purple>==================================================</color>");
+        Debug.Log("<color=purple>★ [AITalkScheduler] AI 스탯 캐싱 및 스케줄러 초기화 시작</color>");
+
+        foreach (var p in GameDataManager.Instance.Participants)
+        {
+            if (p.IsAI)
+            {
+                AICooldownData data = new AICooldownData
+                {
+                    Participant = p,
+                    CooldownEndTime = 0f,
+                    RecentTalkCount = 0
+                };
+
+                // 스탯 수치 읽기 및 캐싱
+                data.SociabilityValue = p.Personality != null ? p.Personality.GetStatValue(sociabilityStatKey) : 50;
+                data.PassionValue = p.Personality != null ? p.Personality.GetStatValue(passionStatKey) : 50;
+
+                data.TalkWeight = CalculateTalkWeight(p);
+                data.PersonalCooldown = CalculatePersonalCooldown(p);
+
+                aiDataMap[p.Id] = data;
+
+                Debug.Log($"<color=white> - [AI ID {p.Id}: {p.Name}] 열정: {data.PassionValue}점 (가중치: {data.TalkWeight:F2}) | 사교성: {data.SociabilityValue}점 (휴식 쿨타임: {data.PersonalCooldown:F1}초)</color>");
+            }
+        }
+
+        Debug.Log($"<color=purple>★ 등록 완료된 AI 총 {aiDataMap.Count}명</color>");
+        Debug.Log("<color=purple>==================================================</color>");
+    }
+
+    // 💡 2. 발언 요청 시 추첨 수행 및 상세 디버그 출력
+    public Participant SelectNextSpeaker()
+    {
+        // 글로벌 LLM 쿨타임(2초) 체크
+        if (isGlobalCooldownActive)
+        {
+            Debug.Log("<color=orange>[AITalkScheduler] 글로벌 LLM 쿨타임(2초) 진행 중입니다. 발언 요청 거절됨.</color>");
+            return null;
+        }
+
+        candidateList.Clear();
+        float totalWeight = 0f;
+        float currentTime = Time.time;
+
+        // 후보 AI 선별
+        foreach (var kvp in aiDataMap)
+        {
+            var data = kvp.Value;
+
+            // 조건: 생존 + 쿨타임 해제 시각 도달
+            if (data.Participant.IsAlive && currentTime >= data.CooldownEndTime)
+            {
+                candidateList.Add(data);
+                totalWeight += data.TalkWeight;
+            }
+            else if (data.Participant.IsAlive && currentTime < data.CooldownEndTime)
+            {
+                float remainTime = data.CooldownEndTime - currentTime;
+                Debug.Log($"<color=gray>   (대기 중) [ID {data.Participant.Id} {data.Participant.Name}] 남은 휴식 쿨타임: {remainTime:F1}초</color>");
+            }
+        }
+
+        if (candidateList.Count == 0)
+        {
+            Debug.LogWarning("<color=yellow>[AITalkScheduler] 현재 발언 가능한 AI가 없습니다 (모두 휴식 쿨타임 진행 중).</color>");
+            return null;
+        }
+
+        // 가중치 기반 무작위 추첨
+        float randomVal = Random.Range(0f, totalWeight);
+        float currentSum = 0f;
+
+        for (int i = 0; i < candidateList.Count; i++)
+        {
+            currentSum += candidateList[i].TalkWeight;
+            if (randomVal <= currentSum)
+            {
+                AICooldownData selected = candidateList[i];
+
+                // 💡 [콘솔 디버그 로그] 추첨 결과 출력
+                Debug.Log($"<color=lime>==================================================</color>");
+                Debug.Log($"<color=lime>★ [발언자 추첨 성공] ID: {selected.Participant.Id} | 이름: {selected.Participant.Name}</color>");
+                Debug.Log($"<color=lime>   - 열정 수치: {selected.PassionValue}점 (가중치 {selected.TalkWeight:F2} / 총합 {totalWeight:F2})</color>");
+                Debug.Log($"<color=lime>   - 연속 발언: {selected.RecentTalkCount + 1} / {maxTalkCountBeforeRest}회</color>");
+                Debug.Log($"<color=lime>==================================================</color>");
+
+                OnAISpoken(selected);
+                return selected.Participant;
+            }
+        }
+
+        return candidateList[0].Participant;
+    }
+
+    // 💡 3. AI 발언 확정 및 쿨타임 처리 로그
+    private void OnAISpoken(AICooldownData data)
+    {
+        data.RecentTalkCount++;
+
+        // 지정 발언 횟수(예: 3회) 도달 시 개인 쿨타임 진입
+        if (data.RecentTalkCount >= maxTalkCountBeforeRest)
+        {
+            data.CooldownEndTime = Time.time + data.PersonalCooldown;
+            data.RecentTalkCount = 0;
+
+            Debug.Log($"<color=yellow>★ [휴식 진입] [ID {data.Participant.Id} {data.Participant.Name}] 님이 {maxTalkCountBeforeRest}회 발언하여 사교성({data.SociabilityValue}점) 반영 쿨타임({data.PersonalCooldown:F1}초)이 적용됩니다.</color>");
+        }
+
+        StartCoroutine(GlobalCooldownRoutine());
+    }
+
+    private IEnumerator GlobalCooldownRoutine()
+    {
+        isGlobalCooldownActive = true;
+        yield return new WaitForSeconds(globalLlmCooldown);
+        isGlobalCooldownActive = false;
+        Debug.Log($"<color=cyan>[AITalkScheduler] 글로벌 LLM 쿨타임({globalLlmCooldown}초) 해제됨. 다음 발언 요청 가능.</color>");
+    }
+
+    // --- 스탯 계산 헬퍼 메서드 ---
+    private float CalculatePersonalCooldown(Participant p)
+    {
+        if (p == null || p.Personality == null) return basePersonalCooldown;
+
+        int rawValue = p.Personality.GetStatValue(sociabilityStatKey);
+        float normalized = Mathf.Clamp01((rawValue - 1) / 99.0f);
+        return Mathf.Lerp(basePersonalCooldown, minPersonalCooldown, normalized);
+    }
+
+    private float CalculateTalkWeight(Participant p)
+    {
+        if (p == null || p.Personality == null) return 1.0f;
+
+        int rawValue = p.Personality.GetStatValue(passionStatKey);
+        float normalized = Mathf.Clamp01((rawValue - 1) / 99.0f);
+        return 1.0f + (normalized * 4.0f);
+    }
+}
