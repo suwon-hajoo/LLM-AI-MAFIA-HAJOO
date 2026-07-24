@@ -25,17 +25,21 @@ public class OpenAIChatManager : MonoBehaviour
         Instance ??= this;
     }
 
-    async void Start()
+    void Start()
     {
         
     }
 
-    public async Task<string?> SendChatRequest(GameConversation gameConversation)
+    public async Task<string?> SendChatRequest(GameConversation gameConversation, string response_format = "text")
     {
         OpenAIRequest requestData = new()
         {
             model = "google/diffusiongemma-26b-a4b-it",
-            messages = gameConversation.MessageList
+            messages = gameConversation.MessageList,
+            response_format = new()
+            {
+                type=response_format
+            }
         };
 
         string jsonPayload = JsonUtility.ToJson(requestData);

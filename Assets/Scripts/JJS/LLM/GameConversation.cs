@@ -26,6 +26,11 @@ public class GameConversation
         MessageList.Add(new(){role=role, name=name, content=content});
     }
 
+    public void AddItem(OpenAIMessage message)
+    {
+        MessageList.Add(message);
+    }
+
     public void AddSystemPrompt(string prompt)
     {
         Add("system","system", prompt);
