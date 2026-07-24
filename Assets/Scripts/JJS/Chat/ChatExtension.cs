@@ -19,6 +19,8 @@ public static class ChatExtension
         List<OpenAIMessage> messages = new();
         foreach (ChatLog chatLog in chatService.ChatLogList)
         {
+            if (chatLog.AllowedPlayerIdList.Count > 0 && !chatLog.AllowedPlayerIdList.Contains(participant.Id)) continue;
+            if (chatLog.AllowedRoleList.Count > 0 && !chatLog.AllowedRoleList.Contains(participant.Role.RoleId)) continue;
             messages.Add(chatLog.toDto(participant));
         }
         return messages;

@@ -31,6 +31,11 @@ public class GameConversation
         MessageList.Add(message);
     }
 
+    public void Extend(List<OpenAIMessage> messageList)
+    {
+        MessageList.AddRange(messageList);
+    }
+
     public void AddSystemPrompt(string prompt)
     {
         Add("system","system", prompt);
