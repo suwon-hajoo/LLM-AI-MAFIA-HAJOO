@@ -1,5 +1,5 @@
-
-using System;
+#nullable enable
+using System.Collections.Generic;
 
 public class ChatLog
 {
@@ -7,10 +7,15 @@ public class ChatLog
 
     public string Content {get; private set;}
 
-    public ChatLog(Participant participant, string content)
+    public List<int> AllowedPlayerIdList {get;}
+    public List<string> AllowedRoleList {get;}
+
+    public ChatLog(Participant participant, string content, List<int>? allowedPlayerIdList = null, List<string>? allowedRoleList = null)
     {
         Participant = participant;
         Content = content;
+        AllowedPlayerIdList = allowedPlayerIdList ?? new();
+        AllowedRoleList = allowedRoleList ?? new();
     }
 
 }
