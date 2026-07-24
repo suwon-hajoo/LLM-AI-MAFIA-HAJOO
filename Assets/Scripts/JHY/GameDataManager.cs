@@ -110,6 +110,12 @@ public class GameDataManager : MonoBehaviour
                 Debug.Log($"<color=orange>[★유저: {p.Name}]</color> 역할: <color=lime>{p.Role.RoleName}</color>");
             }
         }
+
+        // 💡 [핵심 추가] AI와 성격 스탯이 모두 생성된 직후 스케줄러 스탯 캐싱 시작!
+        if (AITalkScheduler.Instance != null)
+        {
+            AITalkScheduler.Instance.InitializeAIData();
+        }
     }
 
     // 유저(나)의 데이터만 추출하는 편의 함수
