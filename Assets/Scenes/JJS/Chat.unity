@@ -178,8 +178,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Button
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 0fab422def3a420488db73564aea02d3, type: 2}
-  m_sharedMaterial: {fileID: -5029801031751204626, guid: 0fab422def3a420488db73564aea02d3, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 9fda34b5cdde9864d89402cdb13a1fd3, type: 2}
+  m_sharedMaterial: {fileID: -6436161401083130588, guid: 9fda34b5cdde9864d89402cdb13a1fd3, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -710,8 +710,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 826752590}
-  - component: {fileID: 826752592}
   - component: {fileID: 826752591}
+  - component: {fileID: 826752592}
   m_Layer: 5
   m_Name: Content
   m_TagString: Untagged
@@ -761,21 +761,23 @@ MonoBehaviour:
   m_GameObject: {fileID: 826752589}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8a8695521f0d02e499659fee002a26c2, type: 3}
+  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.GridLayoutGroup
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.VerticalLayoutGroup
   m_Padding:
-    m_Left: 10
-    m_Right: 10
-    m_Top: 10
-    m_Bottom: 10
-  m_ChildAlignment: 6
-  m_StartCorner: 0
-  m_StartAxis: 0
-  m_CellSize: {x: 300, y: 60}
-  m_Spacing: {x: 0, y: 0}
-  m_Constraint: 1
-  m_ConstraintCount: 1
+    m_Left: 0
+    m_Right: 0
+    m_Top: 0
+    m_Bottom: 0
+  m_ChildAlignment: 0
+  m_Spacing: 0
+  m_ChildForceExpandWidth: 1
+  m_ChildForceExpandHeight: 0
+  m_ChildControlWidth: 1
+  m_ChildControlHeight: 1
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 1
+  m_ReverseArrangement: 0
 --- !u!1 &1041816330
 GameObject:
   m_ObjectHideFlags: 0
@@ -1047,8 +1049,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\u200B"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 0fab422def3a420488db73564aea02d3, type: 2}
-  m_sharedMaterial: {fileID: -5029801031751204626, guid: 0fab422def3a420488db73564aea02d3, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 9fda34b5cdde9864d89402cdb13a1fd3, type: 2}
+  m_sharedMaterial: {fileID: -6436161401083130588, guid: 9fda34b5cdde9864d89402cdb13a1fd3, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1821,8 +1823,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 0fab422def3a420488db73564aea02d3, type: 2}
-  m_sharedMaterial: {fileID: -5029801031751204626, guid: 0fab422def3a420488db73564aea02d3, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 9fda34b5cdde9864d89402cdb13a1fd3, type: 2}
+  m_sharedMaterial: {fileID: -6436161401083130588, guid: 9fda34b5cdde9864d89402cdb13a1fd3, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using Unity.VisualScripting;
 
 public class ChatController : MonoBehaviour
 {
@@ -9,36 +10,29 @@ public class ChatController : MonoBehaviour
     private Transform parentContent;
     [SerializeField]
     private TMP_InputField inputField;
-    private OpenAIChatManager openAIChatManager;
-
-    // 테스트용
-    private GameConversation gameConversation;
+    private GameDataManager gameDataManager;
+    private ChatService chatService;
 
     void Start()
     {
-        openAIChatManager = OpenAIChatManager.Instance;
-        gameConversation = new("한국어로 대답해줘");
-        
+        gameDataManager = GameDataManager.Instance;
+        chatService = ChatService.GetInstance();
     }
 
     public void UpdateChat()
     {
         if (!inputField.isFocused) return;
-        if (inputField.text.Equals("")) return;
-
-        GameObject clone = Instantiate(textChatPrefab, parentContent);
-        clone.GetComponent<TextMeshProUGUI>().text=  $"[나] : {inputField.text}";
-        // MakeAnswer(inputField.text);
+        string text = inputField.text;
+        if (text.Equals("")) return;
+        AddChat($"[나] : {text}");
+        var me = gameDataManager.GetMyParticipantData();
+        chatService.AddMessageByDefault(new(){role=LLMRole.User, name=me.Name, content=text});
         inputField.text = "";
     }
 
-    // 이건 테스트용
-    private async void MakeAnswer(string question)
+    public void AddChat(string text)
     {
-        gameConversation.Add("user", "user", question);
-        string answer = await openAIChatManager.SendChatRequest(gameConversation);
-        gameConversation.Add("assistant", "assistant", answer);
         GameObject clone = Instantiate(textChatPrefab, parentContent);
-        clone.GetComponent<TextMeshProUGUI>().text=$"[AI] : {answer}";
+        clone.GetComponent<TextMeshProUGUI>().text=  text;
     }
 }
