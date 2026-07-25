@@ -1,11 +1,9 @@
 #nullable enable
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Unity.VisualScripting;
 
 public class LLMPrompt
 {
@@ -35,16 +33,16 @@ public class LLMPrompt
     public string GetSystemMessage(Participant participant, List<RoleData> gameRoles)
     {
         StringBuilder sb = new();
-        sb.Append($"너는 지금 부터 마피아 게임의 {TeamToString(participant.Role.Team)} 진영이야\n");
-        sb.Append($"목적은 {TeamPurpose(participant.Role.Team)}이야\n");
-        sb.Append($"너의 직업은 {participant.Role.RoleName}이고 능력은 {participant.Role.Description}이야.\n");
-        sb.Append("이 마피아 게임에서는 다양한 직업이 있는데");
+        sb.AppendLine($"너는 지금 부터 마피아 게임의 {TeamToString(participant.Role.Team)} 진영이야");
+        sb.AppendLine($"목적은 {TeamPurpose(participant.Role.Team)}이야");
+        sb.AppendLine($"너의 직업은 {participant.Role.RoleName}이고 능력은 {participant.Role.Description}이야.");
+        sb.AppendLine("이 마피아 게임에서는 다양한 직업이 있는데");
         foreach (var gameRole in gameRoles)
         {
-            sb.Append($"{gameRole.RoleName} : {gameRole.Description}");
+            sb.AppendLine($"{gameRole.RoleName} : {gameRole.Description}");
         }
-        sb.Append("너의 성격은");
-        sb.Append(participant.Personality.GetPromptRawStats());
+        sb.AppendLine("너의 성격은");
+        sb.AppendLine(participant.Personality.GetPromptRawStats());
         return sb.ToString();
     }
 
@@ -62,16 +60,16 @@ public class LLMPrompt
     public string GetVotePrompt(Participant participant,List<Participant> participantList)
     {
         StringBuilder sb = new();
-        sb.Append("투표시간이야\n");
-        sb.Append($"인원으로는 {GetAliveParticipantString(participantList)}가 있어\n");
+        sb.AppendLine("투표시간이야");
+        sb.AppendLine($"인원으로는 {GetAliveParticipantString(participantList)}가 있어");
         switch (participant.Role.Team)
         {
-            case Team.Citizen: sb.Append("누가 마피아일지 골라야 해"); break;
-            case Team.Mafia: sb.Append("가장 마피아로 몰려있는 사람을 골라야 해"); break;
-            case Team.Neutral: sb.Append("너의 목적을 달성하기 위해 제거해야하는 사람을 골라야 해"); break;
+            case Team.Citizen: sb.AppendLine("누가 마피아일지 골라야 해"); break;
+            case Team.Mafia: sb.AppendLine("가장 마피아로 몰려있는 사람을 골라야 해"); break;
+            case Team.Neutral: sb.AppendLine("너의 목적을 달성하기 위해 제거해야하는 사람을 골라야 해"); break;
         }
-        sb.Append("다음 조건에 맞게 JSON 데이터를 채워서 출력해줘 { \"target\" : \"string\" }\n");
-        sb.Append(" target의 값에는 투표할 사람의 이름을 적어줘");
+        sb.AppendLine("다음 조건에 맞게 JSON 데이터를 채워서 출력해줘 { \"target\" : \"string\" }");
+        sb.AppendLine(" target의 값에는 투표할 사람의 이름을 적어줘");
         return sb.ToString();
     }
 
@@ -90,10 +88,10 @@ public class LLMPrompt
     public string GetAbilityPrompt(Participant participant, List<Participant> participantList)
     {
         StringBuilder sb = new();
-        sb.Append("너의 능력을 사용할거야\n");
-        sb.Append($"너의 능력인 {participant.Role.Description}을 어느 사람에게 사용할지 정해줘");
-        sb.Append("다음 조건에 맞게 JSON 데이터를 채워서 출력해줘 { \"target\" : \"string\" }\n");
-        sb.Append("target의 값에는 능력을 사용할 사람의 이름을 적어줘\n");
+        sb.AppendLine("너의 능력을 사용할거야");
+        sb.AppendLine($"너의 능력인 {participant.Role.Description}을 어느 사람에게 사용할지 정해줘");
+        sb.AppendLine("다음 조건에 맞게 JSON 데이터를 채워서 출력해줘 { \"target\" : \"string\" }");
+        sb.AppendLine("target의 값에는 능력을 사용할 사람의 이름을 적어줘");
         return sb.ToString();
     }
 
