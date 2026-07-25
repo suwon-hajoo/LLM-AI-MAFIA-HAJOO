@@ -1579,6 +1579,8 @@ MonoBehaviour:
   maxTalkCountBeforeRest: 3
   sociabilityStatKey: Sociable
   passionStatKey: Passionate
+  autoCheckInterval: 4
+  autoStartLoop: 0
 --- !u!4 &1079785909
 Transform:
   m_ObjectHideFlags: 0

@@ -2,9 +2,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
+ * 코루틴 시작 시 정지할 것을 고려하여 임의로 float 저장하는 방식 고려 중
+ */
+
 public class AITalkScheduler : MonoBehaviour
 {
     public static AITalkScheduler Instance { get; private set; }
+
+    // 2초마다 추첨된 Participant 객체 자체를 보관! (없으면 null)
+    public Participant CurrentSpeaker { get; private set; } = null;
 
     [Header("글로벌 LLM 대화 쿨타임 (초)")]
     [SerializeField] private float globalLlmCooldown = 2.0f; // 인스펙터 수정 가능
@@ -17,6 +24,11 @@ public class AITalkScheduler : MonoBehaviour
     [Header("스탯 Key 또는 Name 설정")]
     [SerializeField] private string sociabilityStatKey = "Sociable"; // 사교성 SO Key
     [SerializeField] private string passionStatKey = "Passionate";         // 열정 SO Key
+
+    // 인스펙터 수정 가능 자동 타이머 설정
+    [Header("자체 자동 루프 설정")]
+    [SerializeField] private float autoCheckInterval = 2.0f;
+    [SerializeField] private bool autoStartLoop = true;
 
     // AI 개별 데이터 캐싱 클래스
     private class AICooldownData
@@ -36,6 +48,8 @@ public class AITalkScheduler : MonoBehaviour
     // GC 방지용 리스트 재사용
     private readonly List<AICooldownData> candidateList = new List<AICooldownData>();
 
+    private Coroutine autoLoopCoroutine;
+
     private void Awake()
     {
         // 💡 파괴되지 않는 싱글톤 세팅
@@ -47,12 +61,45 @@ public class AITalkScheduler : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject); // 씬이 전환되어도 유지!
+        StopAutoScheduleLoop();
     }
 
     /*private void Start()
     {
         InitializeAIData();
     }*/
+
+    // 🌟 [추가] 2초마다 스케줄러가 스스로 작동하는 루프 함수들
+    public void StartAutoScheduleLoop()
+    {
+        if (autoLoopCoroutine != null) StopCoroutine(autoLoopCoroutine);
+        autoLoopCoroutine = StartCoroutine(AutoScheduleRoutine());
+    }
+
+    public void StopAutoScheduleLoop()
+    {
+        if (autoLoopCoroutine != null)
+        {
+            StopCoroutine(autoLoopCoroutine);
+            autoLoopCoroutine = null;
+        }
+    }
+
+    private IEnumerator AutoScheduleRoutine()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(autoCheckInterval);
+
+            CurrentSpeaker = SelectNextSpeaker();
+
+            if (CurrentSpeaker != null )
+            {
+                Debug.Log($"<color=lime>[스케줄러 자동 루프] 뽑힌 AI ID: {CurrentSpeaker.Id}, AI 이름 : {CurrentSpeaker.Name}</color>");
+                // TODO: 이 speakerId를 LLM 전달 로직에 사용
+            }
+        }
+    }
 
     // 💡 1. 초기 데이터 세팅 및 스탯 미리 계산 (캐싱 + 디버그 로그)
     public void InitializeAIData()
@@ -202,5 +249,12 @@ public class AITalkScheduler : MonoBehaviour
         int rawValue = p.Personality.GetStatValue(passionStatKey);
         float normalized = Mathf.Clamp01((rawValue - 1) / 99.0f);
         return 1.0f + (normalized * 4.0f);
+    }
+
+    // 외부에서 ID만 바로 필요할 때 쓰는 단축 메서드
+    public int SelectNextSpeakerId()
+    {
+        Participant selected = SelectNextSpeaker();
+        return selected != null ? selected.Id : -1;
     }
 }
