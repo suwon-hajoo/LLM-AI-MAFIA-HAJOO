@@ -30,7 +30,7 @@ public class OpenAIChatManager : MonoBehaviour
         
     }
 
-    public async Task<string?> SendChatRequest(GameConversation gameConversation, string queryMessage, string response_format = "text")
+    public async Task<string?> SendChatRequest(GameConversation gameConversation, string queryMessage)
     {
         List<OpenAIMessage> requestMessageList = new(gameConversation.MessageList)
         {
@@ -40,10 +40,6 @@ public class OpenAIChatManager : MonoBehaviour
         {
             model = "google/diffusiongemma-26b-a4b-it",
             messages = requestMessageList,
-            response_format = new()
-            {
-                type=response_format
-            }
         };
 
         string jsonPayload = JsonUtility.ToJson(requestData);
