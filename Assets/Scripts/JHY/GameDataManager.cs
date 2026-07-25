@@ -24,6 +24,8 @@ public class GameDataManager : MonoBehaviour
     private readonly List<Participant> _participants = new List<Participant>();
     public IReadOnlyList<Participant> Participants => _participants;
 
+    private LLMPrompt llmPrompt = new LLMPrompt();
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -111,10 +113,37 @@ public class GameDataManager : MonoBehaviour
             }
         }
 
+        // ========================================================================
+        // 🔥 [1번 단계 실전 적용]: 역할 배정이 끝난 직후 AI 대화 DB(ChatData) 개설
+        // ========================================================================
+        InitializeAIChatData();
+
+
         // 💡 [핵심 추가] AI와 성격 스탯이 모두 생성된 직후 스케줄러 스탯 캐싱 시작!
         if (AITalkScheduler.Instance != null)
         {
             AITalkScheduler.Instance.InitializeAIData();
+        }
+    }
+
+    // 💡 1번 단계를 담당하는 전용 메서드
+    private void InitializeAIChatData()
+    {
+        ChatService chatService = ChatService.GetInstance();
+
+        // 참가자 목록 중 AI 참가자만 골라내어 초기화
+        foreach (Participant p in _participants)
+        {
+            if (p.IsAI)
+            {
+                // 1) AI의 진영, 목적, 직업 설명, 성격 수치를 바탕으로 System Prompt 생성
+                string systemPrompt = llmPrompt.GetSystemMessage(p, gameRoles);
+
+                // 2) ChatService에 AI 개인 대화 장부(ChatData) 개설 및 System Prompt 등록
+                chatService.AddChatData(p, systemPrompt);
+
+                Debug.Log($"<color=cyan>[1단계 완료]</color> {p.Name}(ID: {p.Id}) | 성격: {p.Personality.GetDebugLogString()} 전용 ChatData 개설 완료!");
+            }
         }
     }
 
@@ -127,6 +156,6 @@ public class GameDataManager : MonoBehaviour
     // 역할 분배 후 다음 씬으로 넘어가는 테스트
     public void GoToNextScene()
     {
-        UnityEngine.SceneManagement.SceneManager.LoadScene("JHYScene2");
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Chat");
     }
 }

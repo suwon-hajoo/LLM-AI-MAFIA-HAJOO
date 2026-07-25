@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement; // 💡 [추가] 씬 이동용 네임스페이스
 using TMPro;
+using System.Threading.Tasks;
 
 public class NightSceneManager : MonoBehaviour
 {
@@ -240,6 +241,16 @@ public class NightSceneManager : MonoBehaviour
 
         // 💡 [알림 5] 밤 종료 알림
         Debug.Log("<color=purple>[밤 씬 선택 완료] 밤 사이 발생한 사건을 정산합니다.</color>");
+
+        // 💡 [4단계 연동] AI들의 밤 능력(경찰 조사, 의사 보호, 마피아 습격) 비동기 실행!
+        AINightSkillProcessor aiProcessor = new AINightSkillProcessor();
+        Task aiTask = aiProcessor.ProcessAllAINightSkillsAsync();
+
+        // AI 통신 처리가 완료될 때까지 코루틴 대기
+        while (!aiTask.IsCompleted)
+        {
+            yield return null;
+        }
 
         // 사망 정산 실행
         ResolveNightResults();
