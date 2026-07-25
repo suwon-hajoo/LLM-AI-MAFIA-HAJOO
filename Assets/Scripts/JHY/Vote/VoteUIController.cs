@@ -1,8 +1,9 @@
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
+using System.Linq;
 using TMPro;
+using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class VoteUIController : MonoBehaviour
 {
@@ -19,6 +20,8 @@ public class VoteUIController : MonoBehaviour
 
     private Image currentSelectedImage = null;
     private int selectedTargetId = -1;
+
+    private LLMPrompt llmPrompt = new LLMPrompt();
 
     private void Start()
     {
@@ -145,7 +148,7 @@ public class VoteUIController : MonoBehaviour
         Debug.Log($"[선택 변경] 현재 선택된 Target ID: {selectedTargetId}");
     }
 
-    public void SubmitVote()
+    /*public void SubmitVote()
     {
         if (selectedTargetId == -1)
         {
@@ -167,5 +170,105 @@ public class VoteUIController : MonoBehaviour
         if (votePanel != null) votePanel.SetActive(false);
 
         SceneManager.LoadScene("Night_Scenes");
+    }*/
+
+    public async void SubmitVote()
+    {
+        // 1. 중복 클릭 방지
+        if (confirmVoteButton != null) confirmVoteButton.interactable = false;
+
+        // 💡 [개선 1] 로딩 텍스트/UI가 있다면 켜주기 (예시)
+        // loadingText.text = "AI 플레이어들이 투표 중입니다...";
+        // loadingPanel.SetActive(true);
+
+        try
+        {
+            Dictionary<string, int> voteCounts = new Dictionary<string, int>();
+
+            List<Participant> aliveList = GameDataManager.Instance.Participants
+                .Where(p => p.IsAlive)
+                .ToList();
+
+            foreach (var p in aliveList)
+            {
+                voteCounts[p.Name] = 0;
+            }
+
+            // [A] 유저 투표 집계
+            if (selectedTargetId != -1)
+            {
+                Participant myTarget = GameDataManager.Instance.Participants.FirstOrDefault(p => p.Id == selectedTargetId);
+                if (myTarget != null && voteCounts.ContainsKey(myTarget.Name))
+                {
+                    voteCounts[myTarget.Name]++;
+                    Debug.Log($"<color=orange>[유저 투표]</color> 나 ➔ {myTarget.Name}");
+                }
+            }
+
+            // [B] AI 투표 진행 (비동기)
+            ChatService chatService = ChatService.GetInstance();
+
+            foreach (var p in aliveList)
+            {
+                if (p.IsAI)
+                {
+                    var conversation = chatService.GetGameConversationById(p.Id);
+                    if (conversation == null) continue;
+
+                    string votePrompt = llmPrompt.GetVotePrompt(p, aliveList);
+
+                    // 💡 AI가 고민하는 시간 동안 멈추지 않고 비동기 대기
+                    string? jsonResponse = await OpenAIChatManager.Instance.SendChatRequest(conversation, votePrompt, "json_object");
+
+                    if (!string.IsNullOrEmpty(jsonResponse))
+                    {
+                        VoteTarget? result = llmPrompt.GetVoteTarget(jsonResponse);
+                        if (result != null && !string.IsNullOrEmpty(result.target))
+                        {
+                            Debug.Log($"<color=cyan>[AI 투표]</color> {p.Name} ➔ {result.target}");
+                            if (voteCounts.ContainsKey(result.target))
+                            {
+                                voteCounts[result.target]++;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // [C] 최종 집계 및 처형
+            string topVotedName = "";
+            int maxVotes = 0;
+
+            foreach (var kvp in voteCounts)
+            {
+                Debug.Log($"[투표 현황] {kvp.Key} : {kvp.Value}표");
+                if (kvp.Value > maxVotes)
+                {
+                    maxVotes = kvp.Value;
+                    topVotedName = kvp.Key;
+                }
+            }
+
+            if (maxVotes > 0 && !string.IsNullOrEmpty(topVotedName))
+            {
+                Participant executedPerson = aliveList.FirstOrDefault(p => p.Name == topVotedName);
+                if (executedPerson != null)
+                {
+                    executedPerson.Die();
+                    Debug.Log($"<color=red><b>[최종 결과] {executedPerson.Name} 님이 {maxVotes}표로 처형되었습니다!</b></color>");
+                }
+            }
+        }
+        catch (System.Exception ex)
+        {
+            // 💡 [개선 2] 에러가 터져도 게임이 멈추지 않도록 예외 처리
+            Debug.LogError($"[투표 처리 중 오류 발생] {ex.Message}");
+        }
+        finally
+        {
+            // [D] 성공하든 실패하든 무조건 밤 씬으로 안전하게 전환
+            if (votePanel != null) votePanel.SetActive(false);
+            SceneManager.LoadScene("Night_Scenes");
+        }
     }
 }

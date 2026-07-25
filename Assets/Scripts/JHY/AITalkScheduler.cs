@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 /*
@@ -93,10 +94,13 @@ public class AITalkScheduler : MonoBehaviour
 
             CurrentSpeaker = SelectNextSpeaker();
 
-            if (CurrentSpeaker != null )
+            if (CurrentSpeaker != null)
             {
                 Debug.Log($"<color=lime>[스케줄러 자동 루프] 뽑힌 AI ID: {CurrentSpeaker.Id}, AI 이름 : {CurrentSpeaker.Name}</color>");
                 // TODO: 이 speakerId를 LLM 전달 로직에 사용
+
+                // 2. 🔥 AI 대화 실행 (비동기 Task 실행)
+                _ = ProcessAIDayChatAsync(CurrentSpeaker);
             }
         }
     }
@@ -256,5 +260,41 @@ public class AITalkScheduler : MonoBehaviour
     {
         Participant selected = SelectNextSpeaker();
         return selected != null ? selected.Id : -1;
+    }
+
+    // 💡 2단계: AI 대화 생성 및 ChatService 전파 처리
+    private async Task ProcessAIDayChatAsync(Participant speaker)
+    {
+        LLMPrompt llmPrompt = new LLMPrompt();
+        ChatService chatService = ChatService.GetInstance();
+
+        // ① 1단계에서 저장한 AI의 대화 기억 장부(GameConversation) 꺼내기
+        var conversation = chatService.GetGameConversationById(speaker.Id);
+        if (conversation == null) return;
+
+        // ② "성격에 맞게 대화해봐" 지시어 생성
+        string queryPrompt = llmPrompt.GetConversationPrompt();
+
+        // ③ OpenAIChatManager로 LLM API 호출
+        string? aiReply = await OpenAIChatManager.Instance.SendChatRequest(conversation, queryPrompt, "text");
+
+        if (!string.IsNullOrEmpty(aiReply))
+        {
+            // ④ 메시지 생성
+            OpenAIMessage message = new OpenAIMessage
+            {
+                role = LLMRole.User, // ChatService가 본인/남 분기 처리해줌
+                name = speaker.Name,
+                content = aiReply
+            };
+
+            // ⑤ 🔥 [2단계 핵심] 모든 AI 대화 장부(ChatData)에 전파!
+            chatService.AddMessageByDefault(message);
+
+            // ⑥ UI 표시용 텍스트 추가 (UI 매니저나 채팅 UI 뷰가 있다면 전달만 수행)
+            // ChatUI.Instance.ShowMessage(speaker.Name, aiReply);
+
+            Debug.Log($"<color=cyan>[{speaker.Name}]</color> : {aiReply}");
+        }
     }
 }
