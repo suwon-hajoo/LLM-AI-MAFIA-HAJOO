@@ -36,6 +36,7 @@ public class VoteUIController : MonoBehaviour
 
         GenerateVoteButtons();
         SelectSkipButtonDefault();
+        AITalkScheduler.Instance.StopAutoScheduleLoop();
     }
 
     private void GenerateVoteButtons()

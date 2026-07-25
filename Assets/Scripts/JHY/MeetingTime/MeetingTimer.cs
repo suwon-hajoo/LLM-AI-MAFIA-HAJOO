@@ -17,6 +17,7 @@ public class MeetingTimer : MonoBehaviour
     private void Start()
     {
         StartTimer();
+        AITalkScheduler.Instance.StartAutoScheduleLoop();
     }
 
     private void Update()
