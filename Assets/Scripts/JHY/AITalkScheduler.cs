@@ -96,8 +96,8 @@ public class AITalkScheduler : MonoBehaviour
 
             if (CurrentSpeaker != null)
             {
-                Debug.Log($"<color=lime>[스케줄러 자동 루프] 뽑힌 AI ID: {CurrentSpeaker.Id}, AI 이름 : {CurrentSpeaker.Name}</color>");
-                // TODO: 이 speakerId를 LLM 전달 로직에 사용
+                // 쓸데 없는 반복문 사용으로 메모리 지출 (DDD)
+                Debug.Log($"<color=lime>[스케줄러 자동 루프] 뽑힌 AI ID: {CurrentSpeaker.Id} | 이름: {CurrentSpeaker.Name} | 직업: {CurrentSpeaker.Role}</color>\n<color=yellow>[성격 정보] {CurrentSpeaker.Personality.GetDebugLogString()}</color>");
 
                 // 2. 🔥 AI 대화 실행 (비동기 Task 실행)
                 _ = ProcessAIDayChatAsync(CurrentSpeaker);
@@ -276,7 +276,7 @@ public class AITalkScheduler : MonoBehaviour
         string queryPrompt = llmPrompt.GetConversationPrompt();
 
         // ③ OpenAIChatManager로 LLM API 호출
-        string? aiReply = await OpenAIChatManager.Instance.SendChatRequest(conversation, queryPrompt, "text");
+        string? aiReply = await OpenAIChatManager.Instance.SendChatRequest(conversation, queryPrompt);
 
         if (!string.IsNullOrEmpty(aiReply))
         {

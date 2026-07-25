@@ -11,6 +11,16 @@ public class OpenAIRequest
     public int max_tokens = 4096;
     public int temperature = 1;
     public double top_p = 0.95;
+
+    // [추가] response_format 필드 추가!
+    public ResponseFormat response_format;
+}
+
+// [추가] JSON 포맷을 전달하기 위한 DTO 클래스 정의
+[Serializable]
+public class ResponseFormat
+{
+    public string type; // 예: "json_object"
 }
 
 

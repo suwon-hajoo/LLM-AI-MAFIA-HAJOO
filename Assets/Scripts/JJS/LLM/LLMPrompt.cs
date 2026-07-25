@@ -53,7 +53,8 @@ public class LLMPrompt
 
     private string GetAliveParticipantString(List<Participant> participants)
     {
-        string result = string.Join(", ", participants.Select(p=>p.Name));
+        //string result = string.Join(", ", participants.Select(p=>p.Name));
+        string result = string.Join(", ", participants.Where(p => p.IsAlive).Select(p => p.Name));
         return result;
     }
 
@@ -62,13 +63,15 @@ public class LLMPrompt
         StringBuilder sb = new();
         sb.AppendLine("투표시간이야");
         sb.AppendLine($"인원으로는 {GetAliveParticipantString(participantList)}가 있어");
+        sb.AppendLine($"너의 이름은 {participant.Name} 이야 해당 닉네임은 투표하면 안돼");
         switch (participant.Role.Team)
         {
             case Team.Citizen: sb.AppendLine("누가 마피아일지 골라야 해"); break;
             case Team.Mafia: sb.AppendLine("가장 마피아로 몰려있는 사람을 골라야 해"); break;
             case Team.Neutral: sb.AppendLine("너의 목적을 달성하기 위해 제거해야하는 사람을 골라야 해"); break;
         }
-        sb.AppendLine("다음 조건에 맞게 JSON 데이터를 채워서 출력해줘 { \"target\" : \"string\" }");
+        sb.AppendLine("투표를 기권하고 싶다면 \"is_skip\": true 로 작성하고, 누군가에게 투표하려면 \"is_skip\": false 와 함께 target에 생존자 이름을 정확히 적어줘.");
+        sb.AppendLine("다음 조건에 맞게 JSON 데이터를 채워서 출력해줘 { \"is_skip\" : true, \"target\" : \"string\" }");
         sb.AppendLine(" target의 값에는 투표할 사람의 이름을 적어줘");
         return sb.ToString();
     }
@@ -89,6 +92,7 @@ public class LLMPrompt
     {
         StringBuilder sb = new();
         sb.AppendLine("너의 능력을 사용할거야");
+        sb.AppendLine($"인원으로는 {GetAliveParticipantString(participantList)}가 있어");
         sb.AppendLine($"너의 능력인 {participant.Role.Description}을 어느 사람에게 사용할지 정해줘");
         sb.AppendLine("다음 조건에 맞게 JSON 데이터를 채워서 출력해줘 { \"target\" : \"string\" }");
         sb.AppendLine("target의 값에는 능력을 사용할 사람의 이름을 적어줘");

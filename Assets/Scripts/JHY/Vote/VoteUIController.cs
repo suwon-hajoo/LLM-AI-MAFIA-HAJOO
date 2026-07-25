@@ -225,10 +225,16 @@ public class VoteUIController : MonoBehaviour
                         VoteTarget? result = llmPrompt.GetVoteTarget(jsonResponse);
                         if (result != null && !string.IsNullOrEmpty(result.target))
                         {
-                            Debug.Log($"<color=cyan>[AI 투표]</color> {p.Name} ➔ {result.target}");
-                            if (voteCounts.ContainsKey(result.target))
+                            if (result.is_skip)
                             {
-                                voteCounts[result.target]++;
+                                Debug.Log($"<color=cyan>[AI 투표]</color> {p.Name}가 투표를 건너뛰었습니다.");
+                            }
+                            else {
+                                Debug.Log($"<color=cyan>[AI 투표]</color> {p.Name} ➔ {result.target}");
+                                if (voteCounts.ContainsKey(result.target))
+                                {
+                                    voteCounts[result.target]++;
+                                }
                             }
                         }
                     }

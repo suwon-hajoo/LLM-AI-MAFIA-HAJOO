@@ -1,4 +1,5 @@
 #nullable enable
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -30,7 +31,7 @@ public class OpenAIChatManager : MonoBehaviour
         
     }
 
-    public async Task<string?> SendChatRequest(GameConversation gameConversation, string queryMessage)
+    public async Task<string?> SendChatRequest(GameConversation gameConversation, string queryMessage, string? response_format = null)
     {
         List<OpenAIMessage> requestMessageList = new(gameConversation.MessageList)
         {
@@ -40,9 +41,20 @@ public class OpenAIChatManager : MonoBehaviour
         {
             model = "google/diffusiongemma-26b-a4b-it",
             messages = requestMessageList,
+            // json_object 일 때만 전달, 그 외엔 null 처리
+            /*response_format = (response_format == "json_object")
+            ? new ResponseFormat { type = "json_object" }
+            : null*/
+            response_format = null
         };
 
-        string jsonPayload = JsonUtility.ToJson(requestData);
+        //string jsonPayload = JsonUtility.ToJson(requestData);
+        // 💡 JsonUtility.ToJson 대신 JsonConvert.SerializeObject 사용 (null 값 생략 설정)
+        JsonSerializerSettings settings = new JsonSerializerSettings
+        {
+            NullValueHandling = NullValueHandling.Ignore
+        };
+        string jsonPayload = JsonConvert.SerializeObject(requestData, settings);
         Debug.Log(jsonPayload);
         byte[] rawData = Encoding.UTF8.GetBytes(jsonPayload);
 
