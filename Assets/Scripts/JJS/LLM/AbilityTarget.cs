@@ -4,5 +4,5 @@
 */
 public class AbilityTarget
 {
-    string target;
+    public string target {get; set;}
 }

@@ -28,7 +28,7 @@ public class ChatController : MonoBehaviour
 
         GameObject clone = Instantiate(textChatPrefab, parentContent);
         clone.GetComponent<TextMeshProUGUI>().text=  $"[나] : {inputField.text}";
-        MakeAnswer(inputField.text);
+        // MakeAnswer(inputField.text);
         inputField.text = "";
     }
 

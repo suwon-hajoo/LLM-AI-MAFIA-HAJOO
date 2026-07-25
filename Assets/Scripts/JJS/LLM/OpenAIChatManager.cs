@@ -54,7 +54,11 @@ public class OpenAIChatManager : MonoBehaviour
         request.SetRequestHeader("Content-Type", "application/json");
         request.SetRequestHeader("Authorization", "Bearer " + apiKey);
 
-        await request.SendWebRequest();
+        var operation = request.SendWebRequest();
+        while (!operation.isDone)
+        {
+            await Task.Yield();
+        }
 
         if (request.result != UnityWebRequest.Result.Success)
         {

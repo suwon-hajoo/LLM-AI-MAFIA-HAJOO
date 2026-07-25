@@ -3,5 +3,5 @@
 */
 public class VoteTarget
 {
-    public string target;
+    public string target {get; set;}
 }
