@@ -2,12 +2,6 @@ using System;
 using System.Collections.Generic;
 
 
-[Serializable]
-public class OpenAIResponseFormat
-{
-    public string type = "text";
-}
-
 
 [Serializable]
 public class OpenAIRequest
@@ -17,7 +11,6 @@ public class OpenAIRequest
     public int max_tokens = 4096;
     public int temperature = 1;
     public double top_p = 0.95;
-    public OpenAIResponseFormat response_format;
 }
 
 
