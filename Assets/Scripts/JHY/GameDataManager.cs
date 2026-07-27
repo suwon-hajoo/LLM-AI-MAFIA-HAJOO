@@ -164,7 +164,8 @@ public class GameDataManager : MonoBehaviour
     {
         None,       // 게임 진행 중
         CitizenWin, // 시민 진영 승리
-        MafiaWin    // 마피아 진영 승리
+        MafiaWin,   // 마피아 진영 승리
+        MyDeath     // 진영 승패는 안 났지만 '유저 본인'이 사망함
     }
 
     // GameDataManager 승리 메서드
@@ -199,6 +200,13 @@ public class GameDataManager : MonoBehaviour
         if (mafiaCount >= citizenAndNeutralCount)
         {
             return GameResult.MafiaWin;
+        }
+
+        // 3) 전체 승패는 아직 안 났지만, 유저 본인이 사망했는지 확인
+        Participant myData = GetMyParticipantData();
+        if (myData != null && !myData.IsAlive)
+        {
+            return GameResult.MyDeath; // 유저 사망 처리
         }
 
         return GameResult.None; // 아직 승리 조건 미충족 (게임을 계속 진행)

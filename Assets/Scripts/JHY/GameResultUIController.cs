@@ -38,21 +38,34 @@ public class GameResultUIController : MonoBehaviour
         Participant? myData = GameDataManager.Instance.GetMyParticipantData();
         Team myTeam = myData != null ? myData.Role.Team : Team.Citizen;
 
-        // 1. 유저의 승리/패배 여부 판정
-        bool isMyWin = (result == GameResult.CitizenWin && myTeam != Team.Mafia) ||
-                       (result == GameResult.MafiaWin && myTeam == Team.Mafia);
-
-        if (outcomeTitleText != null)
+        // 1. 결과 타이틀 & 설명 텍스트 분기 처리
+        if (result == GameResult.MyDeath)
         {
-            outcomeTitleText.text = isMyWin ? "<color=green>승리</color>" : "<color=red>패배</color>";
+            // 💡 [유저 본인 사망 시]
+            if (outcomeTitleText != null)
+                outcomeTitleText.text = "<color=red>사망</color>";
+
+            if (teamResultText != null)
+                teamResultText.text = "당신은 밤/낮 공작으로 인해 사망하셨습니다.";
+        }
+        else
+        {
+            // 💡 [진영 승리 / 패배 시]
+            bool isMyWin = (result == GameResult.CitizenWin && myTeam != Team.Mafia) ||
+                           (result == GameResult.MafiaWin && myTeam == Team.Mafia);
+
+            if (outcomeTitleText != null)
+            {
+                outcomeTitleText.text = isMyWin ? "<color=green>승리</color>" : "<color=red>패배</color>";
+            }
+
+            if (teamResultText != null)
+            {
+                teamResultText.text = result == GameResult.CitizenWin ? "시민 진영이 승리하였습니다!" : "마피아 진영이 승리하였습니다!";
+            }
         }
 
-        if (teamResultText != null)
-        {
-            teamResultText.text = result == GameResult.CitizenWin ? "시민 진영이 승리하였습니다!" : "마피아 진영이 승리하였습니다!";
-        }
-
-        // 2. 전체 AI 및 유저의 역할 공개 텍스트 생성
+        // 2. 전체 AI 및 유저의 역할 공개 텍스트 생성 (기존 코드 100% 동일)
         if (roleListText != null && GameDataManager.Instance != null)
         {
             string roleSummary = "<b>[ 참가자 역할 공개 ]</b>\n\n";
