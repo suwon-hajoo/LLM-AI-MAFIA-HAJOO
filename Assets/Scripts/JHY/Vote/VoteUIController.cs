@@ -245,17 +245,41 @@ public class VoteUIController : MonoBehaviour
             // [C] 최종 집계 및 처형
             string topVotedName = "";
             int maxVotes = 0;
+            bool isTie = false; // 동점 체크
+            int totalPlayerVotes = 0; // 지목된 표들의 총합
 
             foreach (var kvp in voteCounts)
             {
                 Debug.Log($"[투표 현황] {kvp.Key} : {kvp.Value}표");
+
+                totalPlayerVotes += kvp.Value; // 누군가 지목받은 표 합산
+
                 if (kvp.Value > maxVotes)
                 {
                     maxVotes = kvp.Value;
                     topVotedName = kvp.Key;
+                    isTie = false;
+                }
+                else if (kvp.Value == maxVotes && maxVotes > 0)
+                {
+                    isTie = true;
                 }
             }
 
+            // 건너뛰기 표수 = 전체 생존자 수 - 누군가를 지목한 표의 총합
+            int skipCount = aliveList.Count - totalPlayerVotes;
+
+            // 과반수 기준 계산 (예: 7명 중 4명, 6명 중 4명, 5명 중 3명)
+            int majorityThreshold = (aliveList.Count / 2) + 1;
+
+            if (skipCount == maxVotes)
+            {
+                isTie = true;
+            }
+
+            Debug.Log($"[집계 요약] 최다 득표: {topVotedName} ({maxVotes}표) | 동점: {isTie} | 건너뛰기: {skipCount}표 / 과반기준: {majorityThreshold}표");
+
+            // 최종 분기 처리
             if (maxVotes > 0 && !string.IsNullOrEmpty(topVotedName))
             {
                 Participant executedPerson = aliveList.FirstOrDefault(p => p.Name == topVotedName);
@@ -264,6 +288,15 @@ public class VoteUIController : MonoBehaviour
                     executedPerson.Die();
                     Debug.Log($"<color=red><b>[최종 결과] {executedPerson.Name} 님이 {maxVotes}표로 처형되었습니다!</b></color>");
                 }
+            }
+            else if (isTie)
+            {
+                Debug.Log($"<color=yellow><b>[최종 결과] 동점({maxVotes}표)이 발생하여 무효 처리되었습니다. 아무도 처형되지 않습니다.</b></color>");
+            }
+            else if (skipCount >= majorityThreshold)
+            {
+                // 1) 건너뛰기가 과반수 이상인 경우
+                Debug.Log($"<color=yellow><b>[최종 결과] 과반수({skipCount}/{aliveList.Count}명)가 건너뛰어 아무도 처형되지 않습니다.</b></color>");
             }
         }
         catch (System.Exception ex)
