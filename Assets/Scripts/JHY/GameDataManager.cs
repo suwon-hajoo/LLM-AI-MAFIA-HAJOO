@@ -158,4 +158,49 @@ public class GameDataManager : MonoBehaviour
     {
         UnityEngine.SceneManagement.SceneManager.LoadScene("Chat");
     }
+
+    // 승리 진영 구분을 위한 열거형
+    public enum GameResult
+    {
+        None,       // 게임 진행 중
+        CitizenWin, // 시민 진영 승리
+        MafiaWin    // 마피아 진영 승리
+    }
+
+    // GameDataManager 승리 메서드
+    public GameResult CheckGameResult()
+    {
+        int mafiaCount = 0;
+        int citizenAndNeutralCount = 0;
+
+        // 생존해 있는 참가자들의 진영 카운트
+        foreach (var p in _participants)
+        {
+            if (p.IsAlive)
+            {
+                if (p.Role.Team == Team.Mafia)
+                {
+                    mafiaCount++;
+                }
+                else // Citizen 및 Neutral 진영
+                {
+                    citizenAndNeutralCount++;
+                }
+            }
+        }
+
+        // 조건 1: 마피아가 0명이면 시민 승리
+        if (mafiaCount == 0)
+        {
+            return GameResult.CitizenWin;
+        }
+
+        // 조건 2: 마피아 수가 시민 + 중립 수 이상이면 마피아 승리
+        if (mafiaCount >= citizenAndNeutralCount)
+        {
+            return GameResult.MafiaWin;
+        }
+
+        return GameResult.None; // 아직 승리 조건 미충족 (게임을 계속 진행)
+    }
 }

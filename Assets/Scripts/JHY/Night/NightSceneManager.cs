@@ -1,11 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq; // IReadOnlyList 탐색용 (FirstOrDefault)
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement; // 💡 [추가] 씬 이동용 네임스페이스
-using TMPro;
 using System.Threading.Tasks;
+using TMPro;
+using UnityEngine;
+using UnityEngine.SceneManagement; // 💡 [추가] 씬 이동용 네임스페이스
+using UnityEngine.UI;
+using static GameDataManager;
 
 public class NightSceneManager : MonoBehaviour
 {
@@ -31,6 +32,9 @@ public class NightSceneManager : MonoBehaviour
     [Header("버튼 스프라이트")]
     [SerializeField] private Sprite normalSprite;
     [SerializeField] private Sprite selectedSprite;
+
+    [Header("게임 결과 컨트롤러")]
+    [SerializeField] private GameResultUIController resultUI;
 
     private INightSkill currentSkill;
     private Participant myData;
@@ -253,7 +257,11 @@ public class NightSceneManager : MonoBehaviour
         }
 
         // 사망 정산 실행
-        ResolveNightResults();
+        // [핵심] 정산 결과 승리 조건이 맞아 게임이 끝났다면 대기 및 씬 이동을 하지 않고 즉시 종료!
+        if (ResolveNightResults())
+        {
+            yield break; // 👈 코루틴을 그 자리에서 즉시 끊고 나감
+        }
 
         // 경찰이 아닌 일반 능력(마피아/의사 등) 사용자도 바로 씬이 안 꺼지고 5초 대기 안내 메시지 출력
         if (!(currentSkill is PoliceSkill))
@@ -269,7 +277,7 @@ public class NightSceneManager : MonoBehaviour
         SceneManager.LoadScene(nextSceneName);
     }
 
-    private void ResolveNightResults()
+    private bool ResolveNightResults()
     {
         // 마피아가 습격을 진행한 경우
         if (currentSkill is MafiaSkill mafiaSkill && mafiaSkill.SelectedTargetId != -1)
@@ -291,5 +299,30 @@ public class NightSceneManager : MonoBehaviour
         }
 
         Debug.Log($"<color=purple>==================================================</color>");
+
+        // 💡 사망 정산이 완료되었으므로 승리 조건 검사
+        if (GameDataManager.Instance != null)
+        {
+            GameResult result = GameDataManager.Instance.CheckGameResult();
+
+            // 승리 진영이 결정된 경우 (CitizenWin 또는 MafiaWin)
+            if (result != GameResult.None)
+            {
+                Debug.Log($"<color=yellow>★ [게임 종료] 승리 조건 충족! 결과: {result}</color>");
+
+                if (resultUI != null)
+                {
+                    resultUI.ShowResultPanel(result); // 승리/패배 결과 패널 출력
+                }
+                else
+                {
+                    Debug.LogError("[NightSceneManager] resultUI(GameResultUIController)가 인스펙터에 연결되어 있지 않습니다!");
+                }
+
+                return true; // 👈 게임이 종료되었음을 알림!
+            }
+        }
+
+        return false; // 👈 게임을 계속 진행함!
     }
 }

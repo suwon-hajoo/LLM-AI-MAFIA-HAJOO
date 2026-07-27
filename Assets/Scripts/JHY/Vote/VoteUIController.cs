@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Purchasing;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -18,6 +19,9 @@ public class VoteUIController : MonoBehaviour
     [SerializeField] private Button? confirmVoteButton;   // 투표 확정 버튼
     [SerializeField] private Sprite? normalSprite;        // 기본 배경 (없으면 기본 이미지 유지)
     [SerializeField] private Sprite? selectedSprite;      // 선택 시 배경
+
+    [Header("게임 결과 컨트롤러")]
+    [SerializeField] private GameResultUIController? resultUI;
 
     private Image? currentSelectedImage = null;
     private int selectedTargetId = -1;
@@ -306,9 +310,21 @@ public class VoteUIController : MonoBehaviour
         }
         finally
         {
-            // [D] 성공하든 실패하든 무조건 밤 씬으로 안전하게 전환
-            if (votePanel != null) votePanel.SetActive(false);
-            SceneManager.LoadScene("Night_Scenes");
+            // 승리 조건 체크
+            GameDataManager.GameResult result = GameDataManager.Instance.CheckGameResult();
+            if (result == GameDataManager.GameResult.None)
+            {
+                // [D] 성공하든 실패하든 무조건 밤 씬으로 안전하게 전환
+                if (votePanel != null) votePanel.SetActive(false);
+                SceneManager.LoadScene("Night_Scenes");
+            }
+            else if (result != GameDataManager.GameResult.None)
+            {
+                if (resultUI != null)
+                {
+                    resultUI.ShowResultPanel(result);
+                }
+            }
         }
     }
 }
