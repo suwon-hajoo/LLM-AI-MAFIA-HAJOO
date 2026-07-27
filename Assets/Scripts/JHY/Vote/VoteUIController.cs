@@ -1,3 +1,4 @@
+#nullable enable
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -8,17 +9,17 @@ using UnityEngine.UI;
 public class VoteUIController : MonoBehaviour
 {
     [Header("UI 패널 연결")]
-    [SerializeField] private GameObject votePanel;        // 투표 전체 화면 패널
-    [SerializeField] private Transform voteListPanel;     // 투표 버튼이 깔릴 부모 패널
-    [SerializeField] private GameObject voteButtonPrefab;  // 기본 interactable = false로 되어있는 프리팹
+    [SerializeField] private GameObject? votePanel;        // 투표 전체 화면 패널
+    [SerializeField] private Transform? voteListPanel;     // 투표 버튼이 깔릴 부모 패널
+    [SerializeField] private GameObject? voteButtonPrefab;  // 기본 interactable = false로 되어있는 프리팹
 
     [Header("버튼 및 스프라이트")]
-    [SerializeField] private Button skipVoteButton;      // 건너뛰기 버튼
-    [SerializeField] private Button confirmVoteButton;   // 투표 확정 버튼
-    [SerializeField] private Sprite normalSprite;        // 기본 배경 (없으면 기본 이미지 유지)
-    [SerializeField] private Sprite selectedSprite;      // 선택 시 배경
+    [SerializeField] private Button? skipVoteButton;      // 건너뛰기 버튼
+    [SerializeField] private Button? confirmVoteButton;   // 투표 확정 버튼
+    [SerializeField] private Sprite? normalSprite;        // 기본 배경 (없으면 기본 이미지 유지)
+    [SerializeField] private Sprite? selectedSprite;      // 선택 시 배경
 
-    private Image currentSelectedImage = null;
+    private Image? currentSelectedImage = null;
     private int selectedTargetId = -1;
 
     private LLMPrompt llmPrompt = new LLMPrompt();
@@ -39,7 +40,7 @@ public class VoteUIController : MonoBehaviour
 
         GenerateVoteButtons();
         SelectSkipButtonDefault();
-        AITalkScheduler.Instance.StopAutoScheduleLoop();
+        AITalkScheduler.Instance!.StopAutoScheduleLoop();
     }
 
     private void GenerateVoteButtons()
@@ -84,7 +85,7 @@ public class VoteUIController : MonoBehaviour
 
             // 4) 자식 오브젝트(Button_Vote)에서 Button 및 Image 컴포넌트 찾기
             Button btn = newBtnObj.GetComponentInChildren<Button>();
-            Image btnImage = btn != null ? btn.GetComponent<Image>() : null;
+            Image? btnImage = btn != null ? btn.GetComponent<Image>() : null;
 
             // 5) 💡 버튼 활성화 조건 (살아있고 + 자기 자신이 아닌 경우만 true)
             bool isVoteable = p.IsAlive && (myData == null || p.Id != myData.Id);
@@ -105,7 +106,7 @@ public class VoteUIController : MonoBehaviour
             // 7) 투표 가능한 대상만 클릭 이벤트 등록
             if (btn != null && isVoteable)
             {
-                btn.onClick.AddListener(() => OnTargetButtonClicked(btnImage, targetId));
+                btn.onClick.AddListener(() => OnTargetButtonClicked(btnImage!, targetId));
             }
         }
     }
@@ -218,7 +219,7 @@ public class VoteUIController : MonoBehaviour
                     string votePrompt = llmPrompt.GetVotePrompt(p, aliveList);
 
                     // 💡 AI가 고민하는 시간 동안 멈추지 않고 비동기 대기
-                    string? jsonResponse = await OpenAIChatManager.Instance.SendChatRequest(conversation, votePrompt, "json_object");
+                    string? jsonResponse = await OpenAIChatManager.Instance!.SendChatRequest(conversation, votePrompt, "json_object");
 
                     if (!string.IsNullOrEmpty(jsonResponse))
                     {

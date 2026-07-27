@@ -1,3 +1,4 @@
+#nullable enable
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -9,10 +10,10 @@ using UnityEngine;
 
 public class AITalkScheduler : MonoBehaviour
 {
-    public static AITalkScheduler Instance { get; private set; }
+    public static AITalkScheduler? Instance { get; private set; }
 
     // 2초마다 추첨된 Participant 객체 자체를 보관! (없으면 null)
-    public Participant CurrentSpeaker { get; private set; } = null;
+    public Participant? CurrentSpeaker { get; private set; } = null;
 
     [Header("글로벌 LLM 대화 쿨타임 (초)")]
     [SerializeField] private float globalLlmCooldown = 2.0f; // 인스펙터 수정 가능
@@ -34,7 +35,7 @@ public class AITalkScheduler : MonoBehaviour
     // AI 개별 데이터 캐싱 클래스
     private class AICooldownData
     {
-        public Participant Participant;
+        public Participant? Participant;
         public float CooldownEndTime = 0f;    // 쿨타임이 해제되는 절대 시각 (Time.time 기준)
         public int RecentTalkCount = 0;       // 최근 발언 횟수
         public float TalkWeight = 1.0f;       // 열정 스탯 기반 추첨 가중치
@@ -49,7 +50,7 @@ public class AITalkScheduler : MonoBehaviour
     // GC 방지용 리스트 재사용
     private readonly List<AICooldownData> candidateList = new List<AICooldownData>();
 
-    private Coroutine autoLoopCoroutine;
+    private Coroutine? autoLoopCoroutine;
 
     private void Awake()
     {
@@ -148,7 +149,7 @@ public class AITalkScheduler : MonoBehaviour
     }
 
     // 💡 2. 발언 요청 시 추첨 수행 및 상세 디버그 출력
-    public Participant SelectNextSpeaker()
+    public Participant? SelectNextSpeaker()
     {
         // 글로벌 LLM 쿨타임(2초) 체크
         if (isGlobalCooldownActive)
@@ -167,7 +168,7 @@ public class AITalkScheduler : MonoBehaviour
             var data = kvp.Value;
 
             // 조건: 생존 + 쿨타임 해제 시각 도달
-            if (data.Participant.IsAlive && currentTime >= data.CooldownEndTime)
+            if (data.Participant!.IsAlive && currentTime >= data.CooldownEndTime)
             {
                 candidateList.Add(data);
                 totalWeight += data.TalkWeight;
@@ -198,7 +199,7 @@ public class AITalkScheduler : MonoBehaviour
 
                 // 💡 [콘솔 디버그 로그] 추첨 결과 출력
                 Debug.Log($"<color=lime>==================================================</color>");
-                Debug.Log($"<color=lime>★ [발언자 추첨 성공] ID: {selected.Participant.Id} | 이름: {selected.Participant.Name}</color>");
+                Debug.Log($"<color=lime>★ [발언자 추첨 성공] ID: {selected.Participant!.Id} | 이름: {selected.Participant.Name}</color>");
                 Debug.Log($"<color=lime>   - 열정 수치: {selected.PassionValue}점 (가중치 {selected.TalkWeight:F2} / 총합 {totalWeight:F2})</color>");
                 Debug.Log($"<color=lime>   - 연속 발언: {selected.RecentTalkCount + 1} / {maxTalkCountBeforeRest}회</color>");
                 Debug.Log($"<color=lime>==================================================</color>");
@@ -222,7 +223,7 @@ public class AITalkScheduler : MonoBehaviour
             data.CooldownEndTime = Time.time + data.PersonalCooldown;
             data.RecentTalkCount = 0;
 
-            Debug.Log($"<color=yellow>★ [휴식 진입] [ID {data.Participant.Id} {data.Participant.Name}] 님이 {maxTalkCountBeforeRest}회 발언하여 사교성({data.SociabilityValue}점) 반영 쿨타임({data.PersonalCooldown:F1}초)이 적용됩니다.</color>");
+            Debug.Log($"<color=yellow>★ [휴식 진입] [ID {data.Participant!.Id} {data.Participant.Name}] 님이 {maxTalkCountBeforeRest}회 발언하여 사교성({data.SociabilityValue}점) 반영 쿨타임({data.PersonalCooldown:F1}초)이 적용됩니다.</color>");
         }
 
         StartCoroutine(GlobalCooldownRoutine());
@@ -258,7 +259,7 @@ public class AITalkScheduler : MonoBehaviour
     // 외부에서 ID만 바로 필요할 때 쓰는 단축 메서드
     public int SelectNextSpeakerId()
     {
-        Participant selected = SelectNextSpeaker();
+        Participant? selected = SelectNextSpeaker();
         return selected != null ? selected.Id : -1;
     }
 
@@ -276,7 +277,7 @@ public class AITalkScheduler : MonoBehaviour
         string queryPrompt = llmPrompt.GetConversationPrompt();
 
         // ③ OpenAIChatManager로 LLM API 호출
-        string? aiReply = await OpenAIChatManager.Instance.SendChatRequest(conversation, queryPrompt);
+        string? aiReply = await OpenAIChatManager.Instance!.SendChatRequest(conversation, queryPrompt);
 
         if (!string.IsNullOrEmpty(aiReply))
         {

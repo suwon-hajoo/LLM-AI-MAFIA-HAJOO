@@ -1,3 +1,4 @@
+#nullable enable
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -28,7 +29,7 @@ public class AINightSkillProcessor
                 string abilityPrompt = llmPrompt.GetAbilityPrompt(aiPlayer, aliveList);
 
                 // 3. LLM에 JSON 형태 결과 요청
-                string? jsonResponse = await OpenAIChatManager.Instance.SendChatRequest(conversation, abilityPrompt, "json_object");
+                string? jsonResponse = await OpenAIChatManager.Instance!.SendChatRequest(conversation, abilityPrompt, "json_object");
 
                 if (!string.IsNullOrEmpty(jsonResponse))
                 {
@@ -51,7 +52,7 @@ public class AINightSkillProcessor
                         {
                             OpenAIMessage systemNotification = new OpenAIMessage
                             {
-                                role = LLMRole.User, // 또는 system
+                                role = LLMRole.System, // 또는 system
                                 name = "시스템",
                                 content = resultMessageContent
                             };
