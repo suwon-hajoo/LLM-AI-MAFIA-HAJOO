@@ -7,6 +7,7 @@ public static class NightSkillFactory
             "Mafia" => new MafiaSkill(),
             "Doctor" => new DoctorSkill(),
             "Police" => new PoliceSkill(),
+            "Spy" => new SpySkill(),
             _ => new CitizenSkill() // 그 외 시민 등
         };
     }

@@ -40,6 +40,8 @@ public class VoteUIController : MonoBehaviour
     // 회의 타이머 종료 시 호출
     public void OpenVotePanel()
     {
+        AITalkScheduler.Instance!.StopAutoScheduleLoop();
+
         // 첫 째 날 투표 스킵
         if (GameDataManager.Instance.OneDay == true)
         {
@@ -52,7 +54,6 @@ public class VoteUIController : MonoBehaviour
 
         GenerateVoteButtons();
         SelectSkipButtonDefault();
-        AITalkScheduler.Instance!.StopAutoScheduleLoop();
     }
 
     private void GenerateVoteButtons()

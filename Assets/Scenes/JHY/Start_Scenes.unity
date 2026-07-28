@@ -1016,6 +1016,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 41a206932a4ca414ca6353b4b4afe7f9, type: 2}
   - {fileID: 11400000, guid: 2f46661fa18caba46b1802cb8d32b78c, type: 2}
   - {fileID: 11400000, guid: a6271683d85aa994c9ae84d6ca1cfc01, type: 2}
+  - {fileID: 11400000, guid: 55e67f8cb7eea0240a6a00cc513e72d9, type: 2}
   personalityStats:
   - {fileID: 11400000, guid: 7f397e66779ab9f4b89cfd668603d494, type: 2}
   - {fileID: 11400000, guid: 19c757b4b31265d4e8ca52ab9162ace0, type: 2}
@@ -1030,6 +1031,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f787ec7f516b4b1458e3290380361cc0, type: 2}
   nameListSO: {fileID: 11400000, guid: 4f500d7495768b548b1c3d7828f65a37, type: 2}
   AiParticipant: 7
+  OneDay: 0
 --- !u!4 &488528494
 Transform:
   m_ObjectHideFlags: 0
@@ -1580,7 +1582,6 @@ MonoBehaviour:
   sociabilityStatKey: Sociable
   passionStatKey: Passionate
   autoCheckInterval: 4
-  autoStartLoop: 0
 --- !u!4 &1079785909
 Transform:
   m_ObjectHideFlags: 0

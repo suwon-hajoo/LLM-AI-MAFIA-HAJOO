@@ -202,7 +202,15 @@ public class NightSceneManager : MonoBehaviour
 
         if (target != null)
         {
-            bool isMafia = target.Role.RoleId == "Mafia";
+
+            bool isMafia = target.Role.Team == Team.Mafia;
+
+            // 스파이는 false가 되어 마피아가 아니라고 뜸
+            if (target.Role.RoleId == "Spy")
+            {
+                isMafia = false;
+            }
+
             string msg = $"[조사 결과] {target.Name} 님은 <color={(isMafia ? "red" : "cyan")}>{(isMafia ? "마피아입니다!" : "마피아가 아닙니다.")}</color>";
 
             // 💡 [알림 4] 경찰 전용 결과 디버그 알림
