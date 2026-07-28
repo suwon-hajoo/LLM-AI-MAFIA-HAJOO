@@ -1,9 +1,9 @@
 using UnityEngine;
 using TMPro;
-using Unity.VisualScripting;
 
 public class ChatController : MonoBehaviour
 {
+    public static ChatController Instance;
     [SerializeField]
     private GameObject textChatPrefab;
     [SerializeField]
@@ -12,6 +12,11 @@ public class ChatController : MonoBehaviour
     private TMP_InputField inputField;
     private GameDataManager gameDataManager;
     private ChatService chatService;
+
+    void Awake()
+    {
+        Instance = this;
+    }
 
     void Start()
     {

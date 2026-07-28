@@ -21,13 +21,35 @@ public class LLMPrompt
 
     private string TeamPurpose(Team team)
     {
-        switch (team)
+        return team switch
         {
-            case Team.Citizen: return "마피아를 찾아서 잡는 것";
-            case Team.Mafia: return "시민을 죽여 살아남는 것";
-            case Team.Neutral: return "특정 조건을 맞추는 것";
-        }
-        return "";
+            Team.Citizen => "마피아를 찾아서 투표를 통해 잡는 것",
+            Team.Mafia => "밤에 능력을 사용하여 시민을 죽이거나 투표를 시민에게 유도하여 죽여 살아남는 것",
+            Team.Neutral => "특정 조건을 맞추는 것",
+            _ => "",
+        };
+    }
+
+    public string GetGameExplaination()
+    {
+        StringBuilder sb = new();
+        sb.AppendLine("이 게임의 방식은 낮, 투표시간, 밤 이렇게 있는데");
+        sb.AppendLine("낮 시간에는 대화만 할 수 있고");
+        sb.AppendLine("투표시간에는 가장 의심스러운 사람 한명을 골라 투표할 수 있어");
+        sb.AppendLine("밤 시간에는 각자에게 부여된 능력을 사용할 수 있어");
+        return sb.ToString();
+    }
+
+    public string GetTip(RoleData roleData)
+    {
+        return roleData.RoleId switch
+        {
+            "Citizen" => "팁으로는 의심받지 말고 마피아를 찾는게 좋아\n",
+            "Doctor" => "팁으로는 자신이 의사라는 걸 들키지 말고 마피아가 노릴 사람을 찾아서 능력을 사용하는게 좋아\n",
+            "Mafia" => "팁으로는 자신이 마피아라는 것을 들키지 말고 시민 중에서 마피아를 위협하는 능력을 가진 사람을 찾아내는 게 좋지\n",
+            "Police" => "팁으로는 최대한 빨리 마피아를 찾아내는게 중요해\n",
+            _ => ""
+        };
     }
 
     public string GetSystemMessage(Participant participant, List<RoleData> gameRoles)
@@ -35,6 +57,8 @@ public class LLMPrompt
         StringBuilder sb = new();
         sb.AppendLine($"너는 지금 부터 마피아 게임의 {TeamToString(participant.Role.Team)} 진영이야");
         sb.AppendLine($"목적은 {TeamPurpose(participant.Role.Team)}이야");
+        sb.Append(GetGameExplaination());
+        sb.Append(GetTip(participant.Role));
         sb.AppendLine($"너의 직업은 {participant.Role.RoleName}이고 능력은 {participant.Role.Description}이야.");
         sb.AppendLine("이 마피아 게임에서는 다양한 직업이 있는데");
         foreach (var gameRole in gameRoles)
@@ -48,7 +72,7 @@ public class LLMPrompt
 
     public string GetConversationPrompt()
     {
-        return "성격에 맞게 대화해봐";
+        return "성격에 맞게 대화해봐 가능하면 짧게 말하면 좋고";
     }
 
     private string GetAliveParticipantString(List<Participant> participants)
