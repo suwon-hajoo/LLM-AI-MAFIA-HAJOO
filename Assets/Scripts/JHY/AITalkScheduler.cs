@@ -32,6 +32,9 @@ public class AITalkScheduler : MonoBehaviour
     [SerializeField] private float autoCheckInterval = 2.0f;
     //[SerializeField] private bool autoStartLoop = true;
 
+    [Header("한번 지목 당했을 때의 가중치")]
+    [SerializeField] private float mentionedWeight = 1.0f;
+
     // AI 개별 데이터 캐싱 클래스
     private class AICooldownData
     {
@@ -51,6 +54,7 @@ public class AITalkScheduler : MonoBehaviour
     private readonly List<AICooldownData> candidateList = new List<AICooldownData>();
 
     private Coroutine? autoLoopCoroutine;
+    private readonly Dictionary<Participant, int> mentionedParticipants = new();
 
     private void Awake()
     {
@@ -140,6 +144,8 @@ public class AITalkScheduler : MonoBehaviour
 
                 aiDataMap[p.Id] = data;
 
+                mentionedParticipants.Add(p, 0);
+
                 Debug.Log($"<color=white> - [AI ID {p.Id}: {p.Name}] 열정: {data.PassionValue}점 (가중치: {data.TalkWeight:F2}) | 사교성: {data.SociabilityValue}점 (휴식 쿨타임: {data.PersonalCooldown:F1}초)</color>");
             }
         }
@@ -172,6 +178,8 @@ public class AITalkScheduler : MonoBehaviour
             {
                 candidateList.Add(data);
                 totalWeight += data.TalkWeight;
+                mentionedParticipants.TryGetValue(data.Participant, out int mentionCount);
+                totalWeight += mentionCount * mentionedWeight;
             }
             else if (data.Participant.IsAlive && currentTime < data.CooldownEndTime)
             {
@@ -203,7 +211,7 @@ public class AITalkScheduler : MonoBehaviour
                 Debug.Log($"<color=lime>   - 열정 수치: {selected.PassionValue}점 (가중치 {selected.TalkWeight:F2} / 총합 {totalWeight:F2})</color>");
                 Debug.Log($"<color=lime>   - 연속 발언: {selected.RecentTalkCount + 1} / {maxTalkCountBeforeRest}회</color>");
                 Debug.Log($"<color=lime>==================================================</color>");
-
+                mentionedParticipants[selected.Participant] = 0;
                 OnAISpoken(selected);
                 return selected.Participant;
             }
@@ -281,7 +289,24 @@ public class AITalkScheduler : MonoBehaviour
 
         if (!string.IsNullOrEmpty(aiReply))
         {
-            ChatController.Instance.AddChat($"[{speaker.Name}] : {aiReply}");
+            ChatTarget? chatTarget = llmPrompt.GetChatTarget(aiReply);
+            if (chatTarget == null)
+            {
+                Debug.LogError("AI가 json 형식에 맞게 대답하지 않았습니다.");
+                return;
+            }
+
+            foreach (Participant participant in GameDataManager.Instance.Participants)
+            {
+                if (!participant.IsAI && chatTarget.target == participant.Name) break;
+                if (participant.Name != chatTarget.target) continue;
+                mentionedParticipants[participant]++;
+                break;
+            }
+            mentionedParticipants[speaker] = 0;
+
+
+            ChatController.Instance!.AddChat($"[{speaker.Name}] : {chatTarget.content}");
             // ④ 메시지 생성
             OpenAIMessage message = new OpenAIMessage
             {
@@ -297,6 +322,18 @@ public class AITalkScheduler : MonoBehaviour
             // ChatUI.Instance.ShowMessage(speaker.Name, aiReply);
 
             Debug.Log($"<color=cyan>[{speaker.Name}]</color> : {aiReply}");
+        }
+    }
+
+    public void AddMentionedParticipant(string participantName)
+    {
+        foreach (Participant p in GameDataManager.Instance.Participants)
+        {
+            if (p.Name == participantName)
+            {
+                mentionedParticipants[p]++;
+                break;
+            }
         }
     }
 }

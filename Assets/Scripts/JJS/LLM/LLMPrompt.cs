@@ -72,7 +72,20 @@ public class LLMPrompt
 
     public string GetConversationPrompt()
     {
-        return "성격에 맞게 대화해봐 가능하면 짧게 말하면 좋고";
+        StringBuilder sb = new();
+        sb.AppendLine("성격에 맞게 대화해봐 가능하면 짧게 말하면 좋고");
+        sb.AppendLine("target에는 말하고 싶은 대상의 이름을 말하면 되고, 말하고 싶은 대상이 없으면 모두라고 적어줘 content에는 하고 싶은 말을 작성하면 돼");
+        sb.AppendLine("다음 조건에 맞게 JSON 데이터를 채워서 출력해줘 { \"target\" : \"string\", \"content\" : \"string\"}");
+        return sb.ToString();
+    }
+
+    public ChatTarget? GetChatTarget(string answer)
+    {
+        Match jsonMatch = Regex.Match(answer, @"\{.*\}", RegexOptions.Singleline);
+        if (!jsonMatch.Success) return null;
+        string jsonText = jsonMatch.Value;
+        ChatTarget? target = JsonSerializer.Deserialize<ChatTarget>(jsonText);
+        return target;
     }
 
     private string GetAliveParticipantString(List<Participant> participants)
@@ -103,10 +116,7 @@ public class LLMPrompt
     public VoteTarget? GetVoteTarget(string answer)
     {
         Match jsonMatch = Regex.Match(answer, @"\{.*\}", RegexOptions.Singleline);
-        if (!jsonMatch.Success)
-        {
-            return null;
-        }
+        if (!jsonMatch.Success) return null;
         string jsonText= jsonMatch.Value;
         VoteTarget? target = JsonSerializer.Deserialize<VoteTarget>(jsonText);
         return target;
