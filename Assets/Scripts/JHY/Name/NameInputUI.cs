@@ -38,6 +38,6 @@ public class NameInputUI : MonoBehaviour
         GameDataManager.Instance.InitializeAndAssignRoles(finalUserName);
 
         // 2. Scene2로 이동
-        SceneManager.LoadScene("JHYScene2");
+        SceneManager.LoadScene("Meeting_Scenes");
     }
 }

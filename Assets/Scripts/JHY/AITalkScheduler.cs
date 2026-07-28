@@ -30,7 +30,7 @@ public class AITalkScheduler : MonoBehaviour
     // 인스펙터 수정 가능 자동 타이머 설정
     [Header("자체 자동 루프 설정")]
     [SerializeField] private float autoCheckInterval = 2.0f;
-    [SerializeField] private bool autoStartLoop = true;
+    //[SerializeField] private bool autoStartLoop = true;
 
     // AI 개별 데이터 캐싱 클래스
     private class AICooldownData

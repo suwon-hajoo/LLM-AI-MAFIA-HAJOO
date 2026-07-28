@@ -27,7 +27,7 @@ public class NightSceneManager : MonoBehaviour
     // 💡 [추가] 능력 선택 완료 후 씬 전환까지 대기할 시간 및 이동할 씬 이름
     [Header("씬 전환 설정")]
     [SerializeField] private float transitionDelay = 5f;     // 능력 사용 후 5초 뒤 이동 (인스펙터에서 변경 가능)
-    [SerializeField] private string nextSceneName = "JHYScene2"; // 이동할 다음 씬 이름
+    [SerializeField] private string nextSceneName = "Meeting_Scenes"; // 이동할 다음 씬 이름
 
     [Header("버튼 스프라이트")]
     [SerializeField] private Sprite normalSprite;
