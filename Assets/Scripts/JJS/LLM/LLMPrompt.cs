@@ -47,7 +47,7 @@ public class LLMPrompt
             "Citizen" => "팁으로는 최대한 의심받지 말고 마피아를 찾는게 좋아\n",
             "Doctor" => "팁으로는 최대한 자신이 의사라는 걸 들키지 말고 마피아가 노릴 사람을 찾아서 능력을 사용하는게 좋아\n",
             "Mafia" => "팁으로는 최대한 자신이 마피아라는 것을 들키지 말고 시민 중에서 마피아를 위협하는 능력을 가진 사람을 찾아내는 게 좋지\n",
-            "Police" => "팁으로는 최대한 자신이 경찰이라는 걸 들키지 않은 상태로 마피아를 찾아내는게 중요해\n",
+            "Police" => "팁으로는 최대한 빨리 마피아를 찾아내는게 중요해\n",
             _ => ""
         };
     }
@@ -72,7 +72,7 @@ public class LLMPrompt
 
     public string GetConversationPrompt()
     {
-        return "성격에 맞게 대화해봐";
+        return "성격에 맞게 대화해봐 가능하면 짧게 말하면 좋고";
     }
 
     private string GetAliveParticipantString(List<Participant> participants)

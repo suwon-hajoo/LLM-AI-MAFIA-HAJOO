@@ -281,6 +281,7 @@ public class AITalkScheduler : MonoBehaviour
 
         if (!string.IsNullOrEmpty(aiReply))
         {
+            ChatController.Instance.AddChat($"[{speaker.Name}] : {aiReply}");
             // ④ 메시지 생성
             OpenAIMessage message = new OpenAIMessage
             {
