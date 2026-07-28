@@ -40,6 +40,14 @@ public class VoteUIController : MonoBehaviour
     // 회의 타이머 종료 시 호출
     public void OpenVotePanel()
     {
+        // 첫 째 날 투표 스킵
+        if (GameDataManager.Instance.OneDay == true)
+        {
+            GameDataManager.Instance.OneDay = false;
+            SceneManager.LoadScene("Night_Scenes");
+            return;
+        }
+
         if (votePanel != null) votePanel.SetActive(true);
 
         GenerateVoteButtons();

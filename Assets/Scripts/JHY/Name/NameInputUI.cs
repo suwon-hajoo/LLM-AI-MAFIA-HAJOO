@@ -37,6 +37,8 @@ public class NameInputUI : MonoBehaviour
         // 1. 유저 이름과 함께 데이터 초기화 실행 (중복 제거 및 AI 이름 생성)
         GameDataManager.Instance.InitializeAndAssignRoles(finalUserName);
 
+        GameDataManager.Instance.OneDay = true;
+
         // 2. Scene2로 이동
         SceneManager.LoadScene("Meeting_Scenes");
     }
