@@ -299,6 +299,7 @@ GameObject:
   m_Component:
   - component: {fileID: 225097815}
   - component: {fileID: 225097814}
+  - component: {fileID: 225097816}
   m_Layer: 0
   m_Name: NightManager
   m_TagString: Untagged
@@ -322,11 +323,8 @@ MonoBehaviour:
   timerText: {fileID: 364711052}
   targetListPanel: {fileID: 859046230}
   nameButtonPrefab: {fileID: 3942482385442714747, guid: 2d1b8855008aebb43840587012b328ba, type: 3}
-  policeResultPanel: {fileID: 2044179367}
-  policeResultText: {fileID: 457607719}
+  nightResultUI: {fileID: 225097816}
   nightDuration: 30
-  policeNoticeDuration: 5
-  transitionDelay: 5
   nextSceneName: Meeting_Scenes
   normalSprite: {fileID: -7881838661044247665, guid: a3f1b77fbe4fad241ab02703bb649087, type: 3}
   selectedSprite: {fileID: 10901, guid: 0000000000000000f000000000000000, type: 0}
@@ -346,6 +344,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &225097816
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 225097813}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3f9eb142672d444382aa9c8fd49033a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NightResultUIController
+  resultPanel: {fileID: 2044179367}
+  resultText: {fileID: 457607719}
+  displayDuration: 5
 --- !u!1 &291327572
 GameObject:
   m_ObjectHideFlags: 0
