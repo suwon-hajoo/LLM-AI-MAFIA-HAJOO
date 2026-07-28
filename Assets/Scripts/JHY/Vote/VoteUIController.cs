@@ -284,7 +284,16 @@ public class VoteUIController : MonoBehaviour
             Debug.Log($"[집계 요약] 최다 득표: {topVotedName} ({maxVotes}표) | 동점: {isTie} | 건너뛰기: {skipCount}표 / 과반기준: {majorityThreshold}표");
 
             // 최종 분기 처리
-            if (maxVotes > 0 && !string.IsNullOrEmpty(topVotedName))
+            if (isTie)
+            {
+                Debug.Log($"<color=yellow><b>[최종 결과] 동점({maxVotes}표)이 발생하여 무효 처리되었습니다. 아무도 처형되지 않습니다.</b></color>");
+            }
+            else if (skipCount >= majorityThreshold || skipCount >= maxVotes)
+            {
+                // 1) 건너뛰기가 과반수 이상인 경우
+                Debug.Log($"<color=yellow><b>[최종 결과] 과반수({skipCount}/{aliveList.Count}명)가 건너뛰어 아무도 처형되지 않습니다.</b></color>");
+            }
+            else if (maxVotes > 0 && !string.IsNullOrEmpty(topVotedName))
             {
                 Participant executedPerson = aliveList.FirstOrDefault(p => p.Name == topVotedName);
                 if (executedPerson != null)
@@ -292,15 +301,6 @@ public class VoteUIController : MonoBehaviour
                     executedPerson.Die();
                     Debug.Log($"<color=red><b>[최종 결과] {executedPerson.Name} 님이 {maxVotes}표로 처형되었습니다!</b></color>");
                 }
-            }
-            else if (isTie)
-            {
-                Debug.Log($"<color=yellow><b>[최종 결과] 동점({maxVotes}표)이 발생하여 무효 처리되었습니다. 아무도 처형되지 않습니다.</b></color>");
-            }
-            else if (skipCount >= majorityThreshold)
-            {
-                // 1) 건너뛰기가 과반수 이상인 경우
-                Debug.Log($"<color=yellow><b>[최종 결과] 과반수({skipCount}/{aliveList.Count}명)가 건너뛰어 아무도 처형되지 않습니다.</b></color>");
             }
         }
         catch (System.Exception ex)

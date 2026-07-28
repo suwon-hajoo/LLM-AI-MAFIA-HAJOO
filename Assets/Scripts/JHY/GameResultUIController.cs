@@ -96,6 +96,6 @@ public class GameResultUIController : MonoBehaviour
         {
             Destroy(GameDataManager.Instance.gameObject);
         }
-        SceneManager.LoadScene("MainScene"); // 실제 메인 씬 이름으로 변경하세요
+        SceneManager.LoadScene("Start_Scenes"); // 실제 메인 씬 이름으로 변경하세요
     }
 }
