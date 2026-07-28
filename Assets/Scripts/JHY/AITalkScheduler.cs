@@ -303,9 +303,10 @@ public class AITalkScheduler : MonoBehaviour
                 mentionedParticipants[participant]++;
                 break;
             }
+            mentionedParticipants[speaker] = 0;
 
 
-            ChatController.Instance.AddChat($"[{speaker.Name}] : {chatTarget.content}");
+            ChatController.Instance!.AddChat($"[{speaker.Name}] : {chatTarget.content}");
             // ④ 메시지 생성
             OpenAIMessage message = new OpenAIMessage
             {
@@ -321,6 +322,18 @@ public class AITalkScheduler : MonoBehaviour
             // ChatUI.Instance.ShowMessage(speaker.Name, aiReply);
 
             Debug.Log($"<color=cyan>[{speaker.Name}]</color> : {aiReply}");
+        }
+    }
+
+    public void AddMentionedParticipant(string participantName)
+    {
+        foreach (Participant p in GameDataManager.Instance.Participants)
+        {
+            if (p.Name == participantName)
+            {
+                mentionedParticipants[p]++;
+                break;
+            }
         }
     }
 }

@@ -1,6 +1,6 @@
 
 public class ChatTarget
 {
-    public string target;
-    public string content;
+    public string target {get; set;}
+    public string content {get; set;}
 }
