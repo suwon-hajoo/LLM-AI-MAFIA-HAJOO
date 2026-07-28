@@ -26,6 +26,8 @@ public class GameDataManager : MonoBehaviour
 
     private LLMPrompt llmPrompt = new LLMPrompt();
 
+    public bool OneDay = false; // 게임 시작 시 첫 째 날 (투표 스킵)
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
