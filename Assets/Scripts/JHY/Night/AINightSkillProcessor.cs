@@ -8,13 +8,11 @@ public class AINightSkillProcessor
 {
     private LLMPrompt llmPrompt = new LLMPrompt();
 
-    // 💡 [4단계 핵심] 살아있는 모든 AI들의 밤 능력을 일괄 처리하는 메서드
     public async Task ProcessAllAINightSkillsAsync()
     {
         ChatService chatService = ChatService.GetInstance();
         var allParticipants = GameDataManager.Instance.Participants;
 
-        // 1. 살아있는 플레이어 목록 추려내기
         List<Participant> aliveList = allParticipants.Where(p => p.IsAlive).ToList();
 
         foreach (var aiPlayer in aliveList)
@@ -33,7 +31,6 @@ public class AINightSkillProcessor
 
                 if (!string.IsNullOrEmpty(jsonResponse))
                 {
-                    // 4. JSON 파싱하여 타겟 이름 얻기
                     AbilityTarget? targetResult = llmPrompt.GetAbilityTarget(jsonResponse);
 
                     if (targetResult != null && !string.IsNullOrEmpty(targetResult.target))
@@ -41,26 +38,41 @@ public class AINightSkillProcessor
                         Participant targetPerson = aliveList.FirstOrDefault(p => p.Name == targetResult.target);
                         if (targetPerson == null) continue;
 
-                        // 5. 직업별 C# 스킬 클래스 생성 및 실행
+                        // 4. 직업별 C# 스킬 클래스 생성 및 실행
                         INightSkill aiSkill = NightSkillFactory.CreateSkill(aiPlayer.Role.RoleId);
                         aiSkill.ExecuteSkill(aiPlayer.Id, targetPerson.Id);
 
-                        // 6. 🔥 [4단계의 핵심!] 능력 결과 텍스트 도출 및 해당 AI 단독 통보
+                        // 5. [스파이 특수 처리] 접촉 대상이 마피아인 경우 마피아 장부에도 알림 주입
+                        if (aiPlayer.Role.RoleId == "Spy" && targetPerson.Role.RoleId == "Mafia")
+                        {
+                            string mafiaNotificationContent = $"[조직원 접촉 알림] 스파이인 '{aiPlayer.Name}' 님이 당신에게 접촉했습니다. 서로 마피아 팀임을 확인했습니다.";
+
+                            OpenAIMessage mafiaMessage = new OpenAIMessage
+                            {
+                                role = LLMRole.System,
+                                name = "시스템",
+                                content = mafiaNotificationContent
+                            };
+
+                            // 마피아 장부에 비밀 기록 추가
+                            chatService.AddMessageById(targetPerson.Id, mafiaMessage);
+                            Debug.Log($"<color=magenta>[스파이 접촉 완료]</color> [{targetPerson.Name}](마피아) 장부에 스파이 정체 통보 추가");
+                        }
+
+                        // 6. 능력 결과 텍스트 도출 및 해당 AI(스파이 본인 등) 단독 통보
                         string resultMessageContent = BuildSkillResultMessage(aiPlayer, targetPerson);
 
                         if (!string.IsNullOrEmpty(resultMessageContent))
                         {
                             OpenAIMessage systemNotification = new OpenAIMessage
                             {
-                                role = LLMRole.System, // 또는 system
+                                role = LLMRole.System,
                                 name = "시스템",
                                 content = resultMessageContent
                             };
 
-                            // 🌟 AddMessageById를 써서 다른 플레이어 몰래 '해당 AI 장부'에만 비밀 기록!
                             chatService.AddMessageById(aiPlayer.Id, systemNotification);
-
-                            Debug.Log($"<color=cyan>[4단계 비밀 통보 완료]</color> [{aiPlayer.Name}] 전용 기록: {resultMessageContent}");
+                            Debug.Log($"<color=cyan>[비밀 통보 완료]</color> [{aiPlayer.Name}] 전용 기록: {resultMessageContent}");
                         }
                     }
                 }
@@ -68,7 +80,6 @@ public class AINightSkillProcessor
         }
     }
 
-    // 직업별 능력 사용 결과 문장 조립 헬퍼 함수
     private string BuildSkillResultMessage(Participant actor, Participant target)
     {
         switch (actor.Role.RoleId)
@@ -82,6 +93,17 @@ public class AINightSkillProcessor
 
             case "Mafia":
                 return $"[마피아 습격 지정] 오늘 밤 조직원들과 함께 '{target.Name}' 님을 습격 대상으로 지정했습니다.";
+
+            case "Spy":
+                bool foundMafia = target.Role.RoleId == "Mafia";
+                if (foundMafia)
+                {
+                    return $"[스파이 접촉 성공] '{target.Name}' 님은 마피아입니다! 서로의 정체를 확인했습니다.";
+                }
+                else
+                {
+                    return $"[스파이 접촉 실패] '{target.Name}' 님은 마피아가 아닙니다. 정체를 밝히지 못했습니다.";
+                }
 
             default:
                 return "";

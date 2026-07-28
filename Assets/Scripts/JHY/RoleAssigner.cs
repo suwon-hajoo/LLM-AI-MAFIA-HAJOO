@@ -18,6 +18,7 @@ public class RoleAssigner
             if (role.RoleId == "Citizen")
             {
                 defaultCitizen = role;
+                continue; // 시민은 여기서 폴에 넣지 않고 일단 패스
             }
 
             for (int i = 0; i < role.MaxCountInGame; i++)
