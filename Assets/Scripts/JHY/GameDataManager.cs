@@ -57,6 +57,10 @@ public class GameDataManager : MonoBehaviour
     {
         _participants.Clear();
 
+        // 💡 게임 시작 시 1~7번 메모장 저장 데이터 직접 초기화!
+        ResetMemoDataInPlayerPrefs();
+
+
         // 💡 [추가] 유저 이름 예외 처리 (공백이나 빈 칸일 경우 기본값 지정)
         if (string.IsNullOrWhiteSpace(userName))
         {
@@ -215,5 +219,18 @@ public class GameDataManager : MonoBehaviour
         }
 
         return GameResult.None; // 아직 승리 조건 미충족 (게임을 계속 진행)
+    }
+
+    /// <summary>
+    /// Start 씬에서 실행: PlayerPrefs에 저장된 1~7번 메모장 데이터를 초기화
+    /// </summary>
+    private void ResetMemoDataInPlayerPrefs()
+    {
+        for (int id = 1; id <= 7; id++)
+        {
+            PlayerPrefs.SetString($"Memo_{id}", $"메모 {id}번의 초기 내용입니다.");
+        }
+        PlayerPrefs.Save();
+        Debug.Log("<color=green>[메모장 초기화 완료]</color> 게임 시작으로 인해 1~7번 메모 저장소가 초기화되었습니다.");
     }
 }
