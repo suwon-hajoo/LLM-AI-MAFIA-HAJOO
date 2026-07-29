@@ -48,7 +48,11 @@ public class OpenAIChatManager : MonoBehaviour
             /*response_format = (response_format == "json_object")
             ? new ResponseFormat { type = "json_object" }
             : null*/
-            response_format = null
+            response_format = null,
+            chat_template_kwargs = new()
+            {
+                enable_thinking=true
+            }
         };
 
         //string jsonPayload = JsonUtility.ToJson(requestData);
