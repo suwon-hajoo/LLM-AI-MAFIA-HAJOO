@@ -14,6 +14,8 @@ public class OpenAIRequest
 
     // [추가] response_format 필드 추가!
     public ResponseFormat response_format;
+
+    public ChatTemplateArg chat_template_kwargs;
 }
 
 // [추가] JSON 포맷을 전달하기 위한 DTO 클래스 정의
@@ -21,6 +23,12 @@ public class OpenAIRequest
 public class ResponseFormat
 {
     public string type; // 예: "json_object"
+}
+
+[Serializable]
+public class ChatTemplateArg
+{
+    public bool enable_thinking;
 }
 
 
