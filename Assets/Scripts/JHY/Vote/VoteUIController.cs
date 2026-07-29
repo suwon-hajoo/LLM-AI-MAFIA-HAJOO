@@ -13,6 +13,7 @@ public class VoteUIController : MonoBehaviour
     [SerializeField] private GameObject? votePanel;        // 투표 전체 화면 패널
     [SerializeField] private Transform? voteListPanel;     // 투표 버튼이 깔릴 부모 패널
     [SerializeField] private GameObject? voteButtonPrefab;  // 기본 interactable = false로 되어있는 프리팹
+    [SerializeField] private MemoManager? memoManager;
 
     [Header("버튼 및 스프라이트")]
     [SerializeField] private Button? skipVoteButton;      // 건너뛰기 버튼
@@ -96,19 +97,52 @@ public class VoteUIController : MonoBehaviour
                 panelImage.color = new Color(0.8f, 0.2f, 0.2f, 0.8f);
             }
 
-            // 4) 자식 오브젝트(Button_Vote)에서 Button 및 Image 컴포넌트 찾기
-            Button btn = newBtnObj.GetComponentInChildren<Button>();
-            Image? btnImage = btn != null ? btn.GetComponent<Image>() : null;
+            // =========================================================
+            // 💡 [추가] 4-1) 메모장 버튼 찾기 및 연결 (ID 1 ~ 7번 매칭)
+            // =========================================================
+            // 프리팹 자식들 중에서 "Button_Memo" 라는 이름을 가진 버튼을 찾습니다.
+            Button[] allButtons = newBtnObj.GetComponentsInChildren<Button>(true);
+            Button? memoBtn = System.Array.Find(allButtons, b => b.name == "Button_Memo");
 
-            // 5) 💡 버튼 활성화 조건 (살아있고 + 자기 자신이 아닌 경우만 true)
-            bool isVoteable = p.IsAlive && (myData == null || p.Id != myData.Id);
-
-            if (btn != null)
+            if (memoBtn != null)
             {
-                btn.interactable = isVoteable; // 사망자 및 본인은 클릭 불가(false)
+                int memoId = p.Id; // 참가자의 ID (1 ~ 7)
+
+                // [핵심] 메모장 버튼도 활성화 조건 체크! 
+                // (살아있고 + 자기 자신/0번 유저가 아닌 경우만 true)
+                bool isMemoable = p.IsAlive && (myData == null || p.Id != myData.Id);
+
+                // 조건에 안 맞으면 버튼 클릭 불가능(interactable = false) 처리
+                memoBtn.interactable = isMemoable;
+
+                // 클릭 가능한 대상일 때만 이벤트 등록
+                if (isMemoable)
+                {
+                    memoBtn.onClick.AddListener(() =>
+                    {
+                        if (memoManager != null)
+                        {
+                            memoManager.SelectMemoById(memoId);
+                            memoManager.OpenMemoPanel();
+                        }
+                    });
+                }
             }
 
-            // 6) 투표 버튼 기본 스프라이트 지정
+            // =========================================================
+            // 4-2) 기존 투표 버튼(Button_Vote) 찾기 및 연결
+            // =========================================================
+            Button? voteBtn = System.Array.Find(allButtons, b => b.name == "Button_Vote");
+            if (voteBtn == null) voteBtn = newBtnObj.GetComponentInChildren<Button>(); // 못찾으면 기본 검색
+
+            Image? btnImage = voteBtn != null ? voteBtn.GetComponent<Image>() : null;
+            bool isVoteable = p.IsAlive && (myData == null || p.Id != myData.Id);
+
+            if (voteBtn != null)
+            {
+                voteBtn.interactable = isVoteable;
+            }
+
             if (btnImage != null && normalSprite != null)
             {
                 btnImage.sprite = normalSprite;
@@ -116,11 +150,36 @@ public class VoteUIController : MonoBehaviour
 
             int targetId = p.Id;
 
-            // 7) 투표 가능한 대상만 클릭 이벤트 등록
-            if (btn != null && isVoteable)
+            if (voteBtn != null && isVoteable)
             {
-                btn.onClick.AddListener(() => OnTargetButtonClicked(btnImage!, targetId));
+                voteBtn.onClick.AddListener(() => OnTargetButtonClicked(btnImage!, targetId));
             }
+
+            /* // 4) 자식 오브젝트(Button_Vote)에서 Button 및 Image 컴포넌트 찾기
+             Button btn = newBtnObj.GetComponentInChildren<Button>();
+             Image? btnImage = btn != null ? btn.GetComponent<Image>() : null;
+
+             // 5) 💡 버튼 활성화 조건 (살아있고 + 자기 자신이 아닌 경우만 true)
+             bool isVoteable = p.IsAlive && (myData == null || p.Id != myData.Id);
+
+             if (btn != null)
+             {
+                 btn.interactable = isVoteable; // 사망자 및 본인은 클릭 불가(false)
+             }
+
+             // 6) 투표 버튼 기본 스프라이트 지정
+             if (btnImage != null && normalSprite != null)
+             {
+                 btnImage.sprite = normalSprite;
+             }
+
+             int targetId = p.Id;
+
+             // 7) 투표 가능한 대상만 클릭 이벤트 등록
+             if (btn != null && isVoteable)
+             {
+                 btn.onClick.AddListener(() => OnTargetButtonClicked(btnImage!, targetId));
+             }*/
         }
     }
 

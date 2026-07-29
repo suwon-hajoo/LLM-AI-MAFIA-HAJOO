@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,7 @@ public class NightSceneManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI timerText;         // 남은 시간 텍스트
     [SerializeField] private Transform targetListPanel;         // Grid Layout Group 부모 패널
     [SerializeField] private GameObject nameButtonPrefab;       // Name_Panel 프리팹
+    [SerializeField] private MemoManager memoManager;
 
     [Header("결과 UI 컨트롤러 연결")]
     [SerializeField] private NightResultUIController nightResultUI; // 새로 만든 UI 컨트롤러
@@ -94,7 +96,65 @@ public class NightSceneManager : MonoBehaviour
                 panelImage.color = new Color(0.8f, 0.2f, 0.2f, 0.8f);
             }
 
-            Button btn = newBtnObj.GetComponentInChildren<Button>();
+            // =========================================================
+            // 💡 [추가] 4-1) 메모장 버튼 찾기 및 연결 (ID 1 ~ 7번 매칭)
+            // =========================================================
+            // 프리팹 자식들 중에서 "Button_Memo" 라는 이름을 가진 버튼을 찾습니다.
+            Button[] allButtons = newBtnObj.GetComponentsInChildren<Button>(true);
+            Button memoBtn = System.Array.Find(allButtons, b => b.name == "Button_Memo");
+
+            if (memoBtn != null)
+            {
+                int memoId = p.Id; // 참가자의 ID (1 ~ 7)
+
+                // 💡 [핵심] 메모장 버튼도 활성화 조건 체크! 
+                // (살아있고 + 자기 자신/0번 유저가 아닌 경우만 true)
+                bool isMemoable = p.IsAlive && (myData == null || p.Id != myData.Id);
+
+                // 조건에 안 맞으면 버튼 클릭 불가능(interactable = false) 처리
+                memoBtn.interactable = isMemoable;
+
+                // 클릭 가능한 대상일 때만 이벤트 등록
+                if (isMemoable)
+                {
+                    memoBtn.onClick.AddListener(() =>
+                    {
+                        if (memoManager != null)
+                        {
+                            memoManager.SelectMemoById(memoId);
+                            memoManager.OpenMemoPanel();
+                        }
+                    });
+                }
+            }
+
+            // =========================================================
+            // 4-2) 기존 투표 버튼(Button_Vote) 찾기 및 연결
+            // =========================================================
+            Button voteBtn = System.Array.Find(allButtons, b => b.name == "Button_Vote");
+            if (voteBtn == null) voteBtn = newBtnObj.GetComponentInChildren<Button>(); // 못찾으면 기본 검색
+
+            Image btnImage = voteBtn != null ? voteBtn.GetComponent<Image>() : null;
+            bool isSelectable = p.IsAlive && (myData == null || p.Id != myData.Id);
+
+            if (voteBtn != null)
+            {
+                voteBtn.interactable = isSelectable;
+            }
+
+            if (btnImage != null && normalSprite != null)
+            {
+                btnImage.sprite = normalSprite;
+            }
+
+            int targetId = p.Id;
+
+            if (voteBtn != null && isSelectable)
+            {
+                voteBtn.onClick.AddListener(() => OnTargetButtonClicked(btnImage!, targetId));
+            }
+
+            /*Button btn = newBtnObj.GetComponentInChildren<Button>();
             Image btnImage = btn != null ? btn.GetComponent<Image>() : null;
 
             bool isSelectable = p.IsAlive && (myData == null || p.Id != myData.Id);
@@ -114,7 +174,7 @@ public class NightSceneManager : MonoBehaviour
             if (btn != null && isSelectable)
             {
                 btn.onClick.AddListener(() => OnTargetButtonClicked(btnImage, targetId));
-            }
+            }*/
         }
     }
 

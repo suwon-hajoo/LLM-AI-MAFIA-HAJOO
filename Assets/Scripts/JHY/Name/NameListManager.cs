@@ -1,12 +1,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class NameListManager : MonoBehaviour
 {
     [Header("UI 연결 부분")]
     [SerializeField] private Transform nameListPanel; // Grid Layout Group이 붙어있는 부모 패널
     [SerializeField] private GameObject namePrefab;    // Project 창에 만든 이름 상자 프리팹 (NameItem)
+
+    [Header("메모장 매니저 연결")]
+    [SerializeField] private MemoManager memoManager; // 씬에 배치된 MemoManager 연결
 
     private void Start()
     {
@@ -53,6 +57,40 @@ public class NameListManager : MonoBehaviour
             {
                 // 유저인 경우 강조 표시를 원하면 살짝 가공도 가능합니다. (예: $"[★] {p.Name}" 등)
                 textComp.text = p.Name;
+            }
+
+            // =========================================================
+            // 💡 [핵심] 메모장 버튼(Button_Memo) 연결 및 본인 비활성화 처리
+            // =========================================================
+            Button[] allButtons = newObj.GetComponentsInChildren<Button>(true);
+            Button memoBtn = System.Array.Find(allButtons, b => b.name == "Button_Memo");
+
+            if (memoBtn != null)
+            {
+                int memoId = p.Id; // 참가자의 ID
+
+                // 0번(유저)이면 false, 0번이 아니면 true
+                bool isMemoable = (p.Id != 0);
+
+                memoBtn.interactable = isMemoable; // 본인이면 클릭 불가능(false)
+
+                if (isMemoable)
+                {
+                    memoBtn.onClick.AddListener(() =>
+                    {
+                        Debug.Log($"[메모 버튼 클릭됨] target memoId: {memoId}");
+
+                        if (memoManager != null)
+                        {
+                            memoManager.SelectMemoById(memoId);
+                            memoManager.OpenMemoPanel();
+                        }
+                        else
+                        {
+                            Debug.LogError("[오류] memoManager 참조가 null입니다! Inspector 연결을 확인하세요.");
+                        }
+                    });
+                }
             }
         }
 
