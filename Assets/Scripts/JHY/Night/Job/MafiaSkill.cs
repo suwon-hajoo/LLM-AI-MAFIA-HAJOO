@@ -10,6 +10,7 @@ public class MafiaSkill : INightSkill
     public void ExecuteSkill(int actorId, int targetId)
     {
         SelectedTargetId = targetId;
+        NightTurnContext.MafiaTargetId = targetId;
         Debug.Log($"<color=red>[마피아] {targetId}번 참가자를 습격 대상으로 지정했습니다.</color>");
     }
 

@@ -19,6 +19,10 @@ public class ChatService
     {
         ChatDataList.Add(new(participant, new(systemPrompt)));
     }
+    public void ClearChatData()
+    {
+        ChatDataList.Clear();
+    }
 
     public GameConversation? GetGameConversationById(int participantId)
     {

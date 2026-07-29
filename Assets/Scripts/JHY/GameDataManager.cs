@@ -133,6 +133,9 @@ public class GameDataManager : MonoBehaviour
     {
         ChatService chatService = ChatService.GetInstance();
 
+        // [핵심 해결] 이전 판의 ChatData가 남아있지 않도록 싹 비워줍니다!
+        chatService.ChatDataList.Clear();
+
         // 참가자 목록 중 AI 참가자만 골라내어 초기화
         foreach (Participant p in _participants)
         {

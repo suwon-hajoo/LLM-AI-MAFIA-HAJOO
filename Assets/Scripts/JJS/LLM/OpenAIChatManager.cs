@@ -33,6 +33,9 @@ public class OpenAIChatManager : MonoBehaviour
 
     public async Task<string?> SendChatRequest(GameConversation gameConversation, string queryMessage, string? response_format = null)
     {
+        // 💡 LLM으로 실제로 날아가는 첫 번째 메시지(System Prompt) 로그 출력
+        Debug.Log($"<color=orange>[LLM 실제 전송 프롬프트 내용]</color>\n{gameConversation.MessageList[0].content}");
+
         List<OpenAIMessage> requestMessageList = new(gameConversation.MessageList)
         {
             new() { role = "user", name = "user", content = queryMessage }

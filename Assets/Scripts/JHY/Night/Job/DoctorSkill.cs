@@ -10,6 +10,7 @@ public class DoctorSkill : INightSkill
     public void ExecuteSkill(int actorId, int targetId)
     {
         ProtectedTargetId = targetId;
+        NightTurnContext.DoctorTargetId = targetId;
         Debug.Log($"<color=green>[의사] {targetId}번 참가자를 보호했습니다.</color>");
     }
 

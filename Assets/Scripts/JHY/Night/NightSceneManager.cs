@@ -210,7 +210,15 @@ public class NightSceneManager : MonoBehaviour
             yield return null;
         }
 
-        Debug.Log("<color=green>[AI 처리 완료] 모든 AI의 밤 능력이 정산되었습니다.</color>");
+        //  AI 처리 작업의 완료 상태 및 오류 여부 검증 로그
+        if (aiTask.IsFaulted)
+        {
+            Debug.LogError($"<color=red>[오류 발생] AI 처리 작업 중 오류가 발생했습니다: {aiTask.Exception?.InnerException?.Message}</color>");
+        }
+        else
+        {
+            Debug.Log("<color=green>[AI 처리 완료] 모든 AI의 밤 능력이 정산되었습니다.</color>");
+        }
 
         // 4. 💡 유저 UI 연출(5초 패널)이 혹시 AI 통신보다 일찍 안 끝났다면 5초 연출이 다 끝날 때까지 남은 대기
         if (uiCoroutine != null)
@@ -230,6 +238,64 @@ public class NightSceneManager : MonoBehaviour
     }
 
     private bool ResolveNightResults()
+    {
+        // 1. NightTurnContext에 기록된 마피아 습격 대상과 의사 보호 대상 ID 가져오기
+        int attackId = NightTurnContext.MafiaTargetId;
+        int protectId = NightTurnContext.DoctorTargetId;
+
+        Debug.Log($"<color=purple>[밤 정산 시작] 마피아 표적: ID {attackId} | 의사 보호: ID {protectId}</color>");
+
+        // 2. 마피아의 공격 대상이 존재하는 경우
+        if (attackId != -1)
+        {
+            Participant target = GameDataManager.Instance.Participants.FirstOrDefault(p => p.Id == attackId);
+
+            if (target != null && target.IsAlive)
+            {
+                // 🌟 [핵심 판정]: 마피아 타깃과 의사 타깃이 같은 경우 세이브!
+                if (attackId == protectId)
+                {
+                    Debug.Log($"<color=cyan>★ [정산 결과] 의사가 '{target.Name}' 님을 치료하여 마피아의 습격으로부터 살아남았습니다!</color>");
+                }
+                else
+                {
+                    // 보호 실패 ➔ 사망 처리
+                    target.Die();
+                    Debug.Log($"<color=red>★ [정산 결과] {target.Name} (ID:{target.Id}) 님이 마피아에게 습격당해 사망했습니다.</color>");
+                }
+            }
+        }
+        else
+        {
+            Debug.Log("<color=green>[정산 결과] 밤사이 아무도 공격받지 않았거나 마피아가 타깃을 지정하지 않았습니다.</color>");
+        }
+
+        // 3. 🌟 정산 완료 후 다음 밤을 위해 context 데이터 초기화
+        NightTurnContext.Reset();
+
+        Debug.Log($"<color=purple>==================================================</color>");
+
+        // 4. 승리 조건 체크
+        if (GameDataManager.Instance != null)
+        {
+            GameResult result = GameDataManager.Instance.CheckGameResult();
+
+            if (result != GameResult.None)
+            {
+                Debug.Log($"<color=yellow>★ [게임 종료] 승리 조건 충족! 결과: {result}</color>");
+
+                if (resultUI != null)
+                {
+                    resultUI.ShowResultPanel(result);
+                }
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /*private bool ResolveNightResults()
     {
         if (currentSkill is MafiaSkill mafiaSkill && mafiaSkill.SelectedTargetId != -1)
         {
@@ -266,5 +332,5 @@ public class NightSceneManager : MonoBehaviour
         }
 
         return false;
-    }
+    }*/
 }
