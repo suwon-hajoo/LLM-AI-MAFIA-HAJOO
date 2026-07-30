@@ -16,13 +16,16 @@ using UnityEngine.Networking;
 public class OpenAIChatManager : MonoBehaviour
 {
     private string apiKey = "";
-    private string apiUrl = "https://integrate.api.nvidia.com/v1/chat/completions";
+    private string apiUrl = "";
+    private string modelName = "";
     public static OpenAIChatManager? Instance {get; private set;}
 
     void Awake()
     {
         EnvLoader.Load();
         apiKey = EnvLoader.Get("Open_AI_API_Key") ?? "";
+        apiUrl = EnvLoader.Get("Open_AI_API_URL") ?? "";
+        modelName = EnvLoader.Get("Model_Name") ?? "";
         Instance ??= this;
     }
 
@@ -42,7 +45,7 @@ public class OpenAIChatManager : MonoBehaviour
         };
         OpenAIRequest requestData = new()
         {
-            model = "google/diffusiongemma-26b-a4b-it",
+            model = modelName,
             messages = requestMessageList,
             // json_object 일 때만 전달, 그 외엔 null 처리
             /*response_format = (response_format == "json_object")
