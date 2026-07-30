@@ -16,13 +16,16 @@ using UnityEngine.Networking;
 public class OpenAIChatManager : MonoBehaviour
 {
     private string apiKey = "";
-    private string apiUrl = "https://integrate.api.nvidia.com/v1/chat/completions";
+    private string apiUrl = "";
+    private string modelName = "";
     public static OpenAIChatManager? Instance {get; private set;}
 
     void Awake()
     {
         EnvLoader.Load();
         apiKey = EnvLoader.Get("Open_AI_API_Key") ?? "";
+        apiUrl = EnvLoader.Get("Open_AI_API_URL") ?? "";
+        modelName = EnvLoader.Get("Model_Name") ?? "";
         Instance ??= this;
     }
 
@@ -31,7 +34,7 @@ public class OpenAIChatManager : MonoBehaviour
         
     }
 
-    public async Task<string?> SendChatRequest(GameConversation gameConversation, string queryMessage, string? response_format = null)
+    public async Task<string?> SendChatRequest(GameConversation gameConversation, string queryMessage, string? response_format = null, bool enbaleThinking = true)
     {
         // 💡 LLM으로 실제로 날아가는 첫 번째 메시지(System Prompt) 로그 출력
         Debug.Log($"<color=orange>[LLM 실제 전송 프롬프트 내용]</color>\n{gameConversation.MessageList[0].content}");
@@ -42,7 +45,7 @@ public class OpenAIChatManager : MonoBehaviour
         };
         OpenAIRequest requestData = new()
         {
-            model = "google/diffusiongemma-26b-a4b-it",
+            model = modelName,
             messages = requestMessageList,
             // json_object 일 때만 전달, 그 외엔 null 처리
             /*response_format = (response_format == "json_object")
@@ -51,7 +54,7 @@ public class OpenAIChatManager : MonoBehaviour
             response_format = null,
             chat_template_kwargs = new()
             {
-                enable_thinking=true
+                enable_thinking=enbaleThinking
             }
         };
 
