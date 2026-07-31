@@ -285,7 +285,7 @@ public class AITalkScheduler : MonoBehaviour
         string queryPrompt = llmPrompt.GetConversationPrompt();
 
         // ③ OpenAIChatManager로 LLM API 호출
-        string? aiReply = await OpenAIChatManager.Instance!.SendChatRequest(conversation, queryPrompt);
+        string? aiReply = await OpenAIChatManager.Instance!.SendChatRequest(conversation, queryPrompt, LLMResponseFormat.JsonObject);
 
         if (!string.IsNullOrEmpty(aiReply))
         {

@@ -35,7 +35,7 @@ public class AINightSkillProcessor
                     string abilityPrompt = llmPrompt.GetAbilityPrompt(aiPlayer, aliveList);
 
                     // 3. LLM에 JSON 형태 결과 요청
-                    string? jsonResponse = await OpenAIChatManager.Instance!.SendChatRequest(conversation, abilityPrompt, "json_object");
+                    string? jsonResponse = await OpenAIChatManager.Instance!.SendChatRequest(conversation, abilityPrompt, LLMResponseFormat.JsonObject);
 
                     if (!string.IsNullOrEmpty(jsonResponse))
                     {
@@ -63,7 +63,7 @@ public class AINightSkillProcessor
                                 };
 
                                 // 마피아 장부에 비밀 기록 추가
-                                chatService.AddMessageById(targetPerson.Id, mafiaMessage);
+                                chatService.AddMessageByRole(targetPerson.Role.RoleId, mafiaMessage);
                                 //chatService.AddMessageByTeam(Team.Mafia, systemNotification); // 모든 마피아 팀에게 전달
                                 Debug.Log($"<color=magenta>[스파이 접촉 완료]</color> [{targetPerson.Name}](마피아) 장부에 스파이 정체 통보 추가");
                             }
