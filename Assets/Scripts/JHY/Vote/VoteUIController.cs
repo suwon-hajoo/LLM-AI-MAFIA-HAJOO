@@ -1,6 +1,7 @@
 #nullable enable
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Purchasing;
@@ -245,6 +246,36 @@ public class VoteUIController : MonoBehaviour
         SceneManager.LoadScene("Night_Scenes");
     }*/
 
+    private async Task ProcessAIVote(ChatService chatService, List<Participant> aliveList, Dictionary<string, int> voteCounts, Participant p)
+    {
+        var conversation = chatService.GetGameConversationById(p.Id);
+        if (conversation == null) return;
+
+        string votePrompt = llmPrompt.GetVotePrompt(p, aliveList);
+
+        // 💡 AI가 고민하는 시간 동안 멈추지 않고 비동기 대기
+        string? jsonResponse = await OpenAIChatManager.Instance!.SendChatRequest(conversation, votePrompt, LLMResponseFormat.JsonObject);
+
+        if (!string.IsNullOrEmpty(jsonResponse))
+        {
+            VoteTarget? result = llmPrompt.GetVoteTarget(jsonResponse);
+            if (result != null && !string.IsNullOrEmpty(result.target))
+            {
+                if (result.is_skip)
+                {
+                    Debug.Log($"<color=cyan>[AI 투표]</color> {p.Name}가 투표를 건너뛰었습니다.");
+                }
+                else {
+                    Debug.Log($"<color=cyan>[AI 투표]</color> {p.Name} ➔ {result.target}");
+                    if (voteCounts.ContainsKey(result.target))
+                    {
+                        voteCounts[result.target]++;
+                    }
+                }
+            }
+        }
+    }
+
     public async void SubmitVote()
     {
         // 1. 중복 클릭 방지
@@ -280,39 +311,17 @@ public class VoteUIController : MonoBehaviour
 
             // [B] AI 투표 진행 (비동기)
             ChatService chatService = ChatService.GetInstance();
+            List<Task> tasks = new();
 
             foreach (var p in aliveList)
             {
                 if (p.IsAI)
                 {
-                    var conversation = chatService.GetGameConversationById(p.Id);
-                    if (conversation == null) continue;
-
-                    string votePrompt = llmPrompt.GetVotePrompt(p, aliveList);
-
-                    // 💡 AI가 고민하는 시간 동안 멈추지 않고 비동기 대기
-                    string? jsonResponse = await OpenAIChatManager.Instance!.SendChatRequest(conversation, votePrompt, "json_object");
-
-                    if (!string.IsNullOrEmpty(jsonResponse))
-                    {
-                        VoteTarget? result = llmPrompt.GetVoteTarget(jsonResponse);
-                        if (result != null && !string.IsNullOrEmpty(result.target))
-                        {
-                            if (result.is_skip)
-                            {
-                                Debug.Log($"<color=cyan>[AI 투표]</color> {p.Name}가 투표를 건너뛰었습니다.");
-                            }
-                            else {
-                                Debug.Log($"<color=cyan>[AI 투표]</color> {p.Name} ➔ {result.target}");
-                                if (voteCounts.ContainsKey(result.target))
-                                {
-                                    voteCounts[result.target]++;
-                                }
-                            }
-                        }
-                    }
+                    tasks.Add(ProcessAIVote(chatService, aliveList, voteCounts, p));
                 }
             }
+
+            await Task.WhenAll(tasks);
 
             // [C] 최종 집계 및 처형
             string topVotedName = "";
