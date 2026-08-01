@@ -16,6 +16,9 @@ public class RoleData : ScriptableObject
     [SerializeField] private Team team = Team.Citizen;
     [SerializeField] private int maxCountInGame = 1;
 
+    [Header("역할 일러스트")]
+    [SerializeField] private Sprite roleicon;
+
     [TextArea]
     [SerializeField] private string description;
 
@@ -24,5 +27,6 @@ public class RoleData : ScriptableObject
     public string RoleName => roleName;
     public Team Team => team;
     public int MaxCountInGame => maxCountInGame;
+    public Sprite RoleIcon => roleicon;
     public string Description => description;
 }

@@ -16,5 +16,6 @@ MonoBehaviour:
   roleName: "\uB9C8\uD53C\uC544"
   team: 1
   maxCountInGame: 1
+  roleicon: {fileID: 5778045713191813506, guid: d250191353bb19b47bd6ad4323d910f5, type: 3}
   description: "\uBC24\uB9C8\uB2E4 \uD55C \uC0AC\uB78C\uC744 \uC8FD\uC77C \uC218
     \uC788\uC74C"

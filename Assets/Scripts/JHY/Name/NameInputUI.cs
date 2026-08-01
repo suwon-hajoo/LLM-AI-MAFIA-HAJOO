@@ -40,6 +40,6 @@ public class NameInputUI : MonoBehaviour
         GameDataManager.Instance.OneDay = true;
 
         // 2. Scene2로 이동
-        SceneManager.LoadScene("Meeting_Scenes");
+        SceneManager.LoadScene("Mafia_RoleReveal_Scene");
     }
 }
