@@ -63,13 +63,16 @@ public class LLMPrompt
         sb.AppendLine($"너는 지금 부터 마피아 게임의 {TeamToString(participant.Role.Team)} 진영이야");
         sb.AppendLine($"목적은 {TeamPurpose(participant.Role.Team)}이야");
         sb.AppendLine($"너의 직업은 {participant.Role.RoleName}이고 능력은 {participant.Role.Description}이야.");
-        sb.AppendLine("이 마피아 게임에서는 다양한 직업이 있는데");
+        sb.AppendLine("이 마피아 게임에서는 다양한 직업이 있는데 직업명과 능력을 설명하자면");
         foreach (var gameRole in gameRoles)
         {
             sb.AppendLine($"{gameRole.RoleName} : {gameRole.Description}");
         }
-        sb.AppendLine("너의 성격은");
-        sb.AppendLine(participant.Personality.GetPromptRawStats());
+        sb.AppendLine("너의 성격은 다음에서 설명하는 수치니까 그것에 맞게 행동을 취하면 되고 각각 1~100점 기준이야");
+        foreach (var kvp in participant.Personality.Stats)
+        {
+            sb.AppendLine($"{kvp.Key.StatName}의 값은 {kvp.Value} 이고 이 수치의 의미는 {kvp.Key.Description} 야");
+        }
         return sb.ToString();
     }
 
