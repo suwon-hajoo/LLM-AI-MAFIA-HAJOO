@@ -327,7 +327,7 @@ MonoBehaviour:
   memoManager: {fileID: 225097817}
   nightResultUI: {fileID: 225097816}
   nightDuration: 30
-  nextSceneName: Meeting_Scenes
+  nextSceneName: Mafia_Meeting_Scenes
   normalSprite: {fileID: -7881838661044247665, guid: a3f1b77fbe4fad241ab02703bb649087, type: 3}
   selectedSprite: {fileID: 10901, guid: 0000000000000000f000000000000000, type: 0}
   resultUI: {fileID: 76802405}

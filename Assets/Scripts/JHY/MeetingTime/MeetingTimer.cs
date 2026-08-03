@@ -16,8 +16,8 @@ public class MeetingTimer : MonoBehaviour
 
     private void Start()
     {
-        StartTimer();
-        AITalkScheduler.Instance.StartAutoScheduleLoop();
+        // 최초 시작
+        ResetAndStartTimer();
     }
 
     private void Update()
@@ -39,11 +39,18 @@ public class MeetingTimer : MonoBehaviour
         }
     }
 
-    public void StartTimer()
+    // 💡 [추가] 회의 타이머 및 AI 대화 루프를 완전히 리셋하고 다시 시작하는 함수
+    public void ResetAndStartTimer()
     {
         currentTimer = durationSeconds;
         isTimerRunning = true;
         TimerUpdate();
+
+        // AI 스케줄러가 있다면 자동 대화 루프 재가동
+        if (AITalkScheduler.Instance != null)
+        {
+            AITalkScheduler.Instance.StartAutoScheduleLoop();
+        }
     }
 
     public void SkipMetting()
