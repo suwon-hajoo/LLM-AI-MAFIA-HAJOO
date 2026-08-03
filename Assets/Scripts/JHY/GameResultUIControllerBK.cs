@@ -6,13 +6,10 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using static GameDataManager;
 
-public class GameResultUIController : MonoBehaviour
+public class GameResultUIControllerBK : MonoBehaviour
 {
-    [Header("캔버스 연결")]
-    [SerializeField] private GameObject? gameCanvas;   // 메인 게임 캔버스
-    [SerializeField] private GameObject? resultCanvas; // 결과 화면 캔버스
-
     [Header("결과 패널 오브젝트")]
+    [SerializeField] private GameObject? resultPanel;           // 결과 전체 화면 패널
     [SerializeField] private TextMeshProUGUI? outcomeTitleText;  // "승리" 또는 "패배" 텍스트
     [SerializeField] private TextMeshProUGUI? teamResultText;    // "시민 진영 승리" 등 세부 설명
     [SerializeField] private TextMeshProUGUI? roleListText;      // 전체 AI 및 유저 역할 공개 텍스트
@@ -25,19 +22,18 @@ public class GameResultUIController : MonoBehaviour
             restartButton.onClick.AddListener(OnRestartButtonClicked);
         }
 
-        // 시작 시 게임 캔버스는 켜고, 결과 캔버스는 꺼둠
-        if (gameCanvas != null) gameCanvas.SetActive(true);
-        if (resultCanvas != null) resultCanvas.SetActive(false);
+        if (resultPanel != null)
+        {
+            resultPanel.SetActive(false); // 시작 시 패널 숨김
+        }
     }
 
     // 승리 판정 시 호출되는 함수
     public void ShowResultPanel(GameResult result)
     {
-        if (result == GameResult.None) return;
+        if (result == GameResult.None || resultPanel == null) return;
 
-        // 💡 캔버스 전환 (게임 캔버스 Off -> 결과 캔버스 On)
-        if (gameCanvas != null) gameCanvas.SetActive(false);
-        if (resultCanvas != null) resultCanvas.SetActive(true);
+        resultPanel.SetActive(true);
 
         Participant? myData = GameDataManager.Instance.GetMyParticipantData();
         Team myTeam = myData != null ? myData.Role.Team : Team.Citizen;
@@ -100,6 +96,6 @@ public class GameResultUIController : MonoBehaviour
         {
             Destroy(GameDataManager.Instance.gameObject);
         }
-        SceneManager.LoadScene("Mafia_Main_Scene"); // 실제 메인 씬 이름으로 변경하세요
+        SceneManager.LoadScene("Start_Scenes"); // 실제 메인 씬 이름으로 변경하세요
     }
 }
