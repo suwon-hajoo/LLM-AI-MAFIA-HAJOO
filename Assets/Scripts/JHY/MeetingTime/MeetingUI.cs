@@ -9,6 +9,7 @@ public class MeetingUI : MonoBehaviour
     [Header("MeetingTimer 부분")]
     [SerializeField] private MeetingTimer meetingTimer;
     [SerializeField] private TextMeshProUGUI timerText;
+    [SerializeField] private Button meetingSkipButton;
 
     // 💡 [추가] 채팅 관련 UI 및 스크립트 연결
     [Header("채팅 전송 부분")]
@@ -23,6 +24,8 @@ public class MeetingUI : MonoBehaviour
         {
             sendButton.onClick.AddListener(OnClickSendMessageButton);
         }
+
+        meetingSkipButton.onClick.AddListener(MettingSkipButton);
 
         // 💡 (선택) 입력창에서 엔터키(Submit)를 쳤을 때도 메시지가 가도록 AddListener 처리
         if (inputField != null)
