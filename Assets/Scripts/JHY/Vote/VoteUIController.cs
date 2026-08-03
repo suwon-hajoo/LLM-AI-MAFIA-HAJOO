@@ -29,6 +29,8 @@ public class VoteUIController : MonoBehaviour
     private int selectedTargetId = -1;
 
     private LLMPrompt llmPrompt = new LLMPrompt();
+    private Dictionary<string, int> voteCounts = new();
+    private List<Task> tasks = new();
 
     private void Start()
     {
@@ -43,6 +45,8 @@ public class VoteUIController : MonoBehaviour
     public void OpenVotePanel()
     {
         AITalkScheduler.Instance!.StopAutoScheduleLoop();
+        tasks.Clear();
+        voteCounts.Clear();
 
         // 첫 째 날 투표 스킵
         if (GameDataManager.Instance.OneDay == true)
@@ -55,7 +59,37 @@ public class VoteUIController : MonoBehaviour
         if (votePanel != null) votePanel.SetActive(true);
 
         GenerateVoteButtons();
+        ProcessAllAIVote();
         SelectSkipButtonDefault();
+    }
+    private void ProcessAllAIVote()
+    {
+        try
+        {
+            // [B] AI 투표 진행 (비동기)
+            List<Participant> aliveList = GameDataManager.Instance.Participants
+                .Where(p => p.IsAlive)
+                .ToList();
+            foreach (var p in aliveList)
+            {
+                voteCounts[p.Name] = 0;
+            }
+
+            ChatService chatService = ChatService.GetInstance();
+
+            foreach (var p in aliveList)
+            {
+                if (p.IsAI)
+                {
+                    tasks.Add(ProcessAIVote(chatService, aliveList, voteCounts, p));
+                }
+            }
+            
+        } catch (System.Exception ex)
+        {
+            Debug.LogError($"[투표 처리 중 오류 발생] {ex.Message}");
+        }
+
     }
 
     private void GenerateVoteButtons()
@@ -287,16 +321,10 @@ public class VoteUIController : MonoBehaviour
 
         try
         {
-            Dictionary<string, int> voteCounts = new Dictionary<string, int>();
 
             List<Participant> aliveList = GameDataManager.Instance.Participants
                 .Where(p => p.IsAlive)
                 .ToList();
-
-            foreach (var p in aliveList)
-            {
-                voteCounts[p.Name] = 0;
-            }
 
             // [A] 유저 투표 집계
             if (selectedTargetId != -1)
@@ -306,18 +334,6 @@ public class VoteUIController : MonoBehaviour
                 {
                     voteCounts[myTarget.Name]++;
                     Debug.Log($"<color=orange>[유저 투표]</color> 나 ➔ {myTarget.Name}");
-                }
-            }
-
-            // [B] AI 투표 진행 (비동기)
-            ChatService chatService = ChatService.GetInstance();
-            List<Task> tasks = new();
-
-            foreach (var p in aliveList)
-            {
-                if (p.IsAI)
-                {
-                    tasks.Add(ProcessAIVote(chatService, aliveList, voteCounts, p));
                 }
             }
 
