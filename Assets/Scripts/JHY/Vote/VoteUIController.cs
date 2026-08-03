@@ -20,9 +20,13 @@ public class VoteUIController : MonoBehaviour
     [SerializeField] private Button? skipVoteButton;
     [SerializeField] private Button? confirmVoteButton;
     [SerializeField] private Button? skipMeetingButton;
+    [SerializeField] private Button? nightConfirmButton;
 
     [Header("게임 결과 컨트롤러")]
     [SerializeField] private GameResultUIController? resultUI;
+
+    [Header("밤 컨트롤러 연결")]
+    [SerializeField] private NightSceneManager? nightSceneManager;
 
     private Image? currentSelectedImage = null;
     private int selectedTargetId = -1; // -1: 스킵(기권)
@@ -30,6 +34,9 @@ public class VoteUIController : MonoBehaviour
     private LLMPrompt llmPrompt = new LLMPrompt();
     private Dictionary<string, int> voteCounts = new();
     private List<Task> tasks = new();
+
+    // 💡 [추가] 생성된 프리팹 카드 오브젝트들을 보관할 리스트 (오브젝트 재사용)
+    private List<GameObject> createdCards = new();
 
     private void Start()
     {
@@ -39,13 +46,36 @@ public class VoteUIController : MonoBehaviour
             confirmVoteButton.gameObject.SetActive(false);
         }
 
-
         if (skipVoteButton != null)
         {
             skipVoteButton.onClick.AddListener(OnSkipButtonClicked);
         }
 
         skipMeetingButton?.gameObject.SetActive(true);
+
+        // 💡 [최적화] 게임 시작 시 참가자 수만큼 카드를 딱 한 번 미리 생성해 둡니다.
+        InitVoteButtons();
+    }
+
+    // 💡 [1] 게임 시작 시 최초 1회만 카드를 싹 생성하는 함수
+    private void InitVoteButtons()
+    {
+        if (voteListPanel == null || voteButtonPrefab == null || GameDataManager.Instance == null) return;
+
+        // 기존에 혹시 남아있을 수 있는 자식 제거
+        foreach (Transform child in voteListPanel)
+        {
+            Destroy(child.gameObject);
+        }
+        createdCards.Clear();
+
+        IReadOnlyList<Participant> participants = GameDataManager.Instance.Participants;
+
+        foreach (var p in participants)
+        {
+            GameObject newBtnObj = Instantiate(voteButtonPrefab, voteListPanel);
+            createdCards.Add(newBtnObj);
+        }
     }
 
     public void OpenVotePanel()
@@ -54,17 +84,22 @@ public class VoteUIController : MonoBehaviour
         tasks.Clear();
         voteCounts.Clear();
 
-        /*
         if (GameDataManager.Instance.OneDay)
         {
             GameDataManager.Instance.OneDay = false;
-            SceneManager.LoadScene("Night_Scenes");
+            //SceneManager.LoadScene("Night_Scenes");
+
+            // 💡 [밤 상태로 UI 일괄 전환]
+            SetUIPhaseState(GamePhase.Night);
+
+            if (nightSceneManager != null)
+            {
+                nightSceneManager.StartNightPhase();
+            }
             return;
         }
-        */
 
         if (votePanel != null) votePanel.SetActive(true);
-
 
         if (confirmVoteButton != null)
         {
@@ -73,7 +108,8 @@ public class VoteUIController : MonoBehaviour
 
         skipMeetingButton?.gameObject.SetActive(false);
 
-        GenerateVoteButtons();
+        // 💡 [2] 파괴/생성 대신, 기존 카드들의 상태만 최신으로 갱신해 줍니다!
+        UpdateVoteButtons();
         ProcessAllAIVote();
 
         Canvas.ForceUpdateCanvases();
@@ -83,32 +119,24 @@ public class VoteUIController : MonoBehaviour
         }
     }
 
-    private void GenerateVoteButtons()
+    // 💡 [3] 투표 패널이 열릴 때 카드 데이터 상태만 갱신하는 함수 (파괴 X)
+    private void UpdateVoteButtons()
     {
-        if (voteListPanel == null || voteButtonPrefab == null)
-        {
-            Debug.LogError("[VoteUIController] voteListPanel 또는 voteButtonPrefab이 연결되지 않았습니다!");
-            return;
-        }
-
-        foreach (Transform child in voteListPanel)
-        {
-            Destroy(child.gameObject);
-        }
-
         if (GameDataManager.Instance == null) return;
 
         IReadOnlyList<Participant> participants = GameDataManager.Instance.Participants;
         Participant myData = GameDataManager.Instance.GetMyParticipantData();
 
         currentSelectedImage = null; // 선택 상태 초기화
+        selectedTargetId = -1;       // 기본 선택 스킵으로 초기화
 
-        foreach (var p in participants)
+        for (int i = 0; i < participants.Count && i < createdCards.Count; i++)
         {
-            GameObject newBtnObj = Instantiate(voteButtonPrefab, voteListPanel);
+            Participant p = participants[i];
+            GameObject cardObj = createdCards[i];
 
             // [1] 이름 텍스트 설정
-            TextMeshProUGUI[] allTexts = newBtnObj.GetComponentsInChildren<TextMeshProUGUI>(true);
+            TextMeshProUGUI[] allTexts = cardObj.GetComponentsInChildren<TextMeshProUGUI>(true);
             TextMeshProUGUI? nameText = System.Array.Find(allTexts, t => t.transform.parent != null && t.transform.parent.name.Contains("Heading"));
             if (nameText == null && allTexts.Length > 0) nameText = allTexts[0];
 
@@ -118,7 +146,7 @@ public class VoteUIController : MonoBehaviour
             }
 
             // [2] 버튼 탐색
-            Button[] allButtons = newBtnObj.GetComponentsInChildren<Button>(true);
+            Button[] allButtons = cardObj.GetComponentsInChildren<Button>(true);
             Button? memoBtn = (allButtons.Length > 0) ? allButtons[0] : null;
             Button? voteBtn = (allButtons.Length > 1) ? allButtons[1] : null;
 
@@ -151,17 +179,18 @@ public class VoteUIController : MonoBehaviour
                 Image? btnImage = voteBtn.GetComponent<Image>();
                 TextMeshProUGUI[] voteTexts = voteBtn.GetComponentsInChildren<TextMeshProUGUI>(true);
 
-                // 💡 [선택 전] 기본 알파값 255 (1.0f)로 선명하게 설정
+                // 기본 알파값 255 (1.0f)로 복원
                 if (btnImage != null)
                 {
                     Color c = btnImage.color;
-                    c.a = 1.0f; // 255
+                    c.a = 1.0f;
                     btnImage.color = c;
                 }
 
+                // 💀 사망자 및 유저/AI 상태별 처리
                 if (!p.IsAlive)
                 {
-                    voteBtn.interactable = false;
+                    voteBtn.interactable = false; // 클릭 불가
                     foreach (var t in voteTexts) t.text = "DEAD";
                 }
                 else if (isMe)
@@ -190,31 +219,28 @@ public class VoteUIController : MonoBehaviour
                 }
             }
 
-            // [3] 사망자 카드 처리
-            Image panelImage = newBtnObj.GetComponent<Image>();
-            if (!p.IsAlive && panelImage != null)
+            // [3] 사망자 카드 전체 배경 어둡게 처리
+            Image panelImage = cardObj.GetComponent<Image>();
+            if (panelImage != null)
             {
-                panelImage.color = new Color(0.2f, 0.2f, 0.2f, 0.8f);
+                panelImage.color = !p.IsAlive ? new Color(0.2f, 0.2f, 0.2f, 0.8f) : Color.white;
             }
         }
     }
 
-    // 💡 [핵심] 클릭 시 Alpha를 20(20f/255f)으로 변경하는 함수
     private void OnTargetButtonClicked(Image clickedImage, int targetId)
     {
-        // 1. 이전에 선택되어 찌그러졌던(Alpha 20) 버튼을 다시 알파 255(1.0f)로 원복
         if (currentSelectedImage != null)
         {
             Color prevColor = currentSelectedImage.color;
-            prevColor.a = 1.0f; // 255
+            prevColor.a = 1.0f; // Alpha 255 원복
             currentSelectedImage.color = prevColor;
         }
 
-        // 2. 새롭게 선택한 버튼의 Alpha를 20(20f/255f ≈ 0.078f)으로 흐리게 변경
         if (clickedImage != null)
         {
             Color nextColor = clickedImage.color;
-            nextColor.a = 20f / 255f; // Alpha 20
+            nextColor.a = 20f / 255f; // 선택 시 Alpha 20 적용
             clickedImage.color = nextColor;
         }
 
@@ -278,7 +304,7 @@ public class VoteUIController : MonoBehaviour
             VoteTarget? result = llmPrompt.GetVoteTarget(jsonResponse);
             if (result != null)
             {
-                // 💡 [수정] target 체크 전에 is_skip 여부를 먼저 확인합니다!
+                // is_skip 검사를 target 검사보다 먼저 수행
                 if (result.is_skip)
                 {
                     Debug.Log($"<color=cyan>[AI 투표]</color> {p.Name}가 투표를 건너뛰었습니다.");
@@ -374,12 +400,61 @@ public class VoteUIController : MonoBehaviour
             if (result == GameDataManager.GameResult.None)
             {
                 if (votePanel != null) votePanel.SetActive(false);
-                SceneManager.LoadScene("Night_Scenes");
+                //SceneManager.LoadScene("Night_Scenes");
+                // 밤 컨트롤러 실행! (씬 로딩 대신 단일 씬에서 밤 패널 전환)
+
+                // 💡 [밤 상태로 UI 일괄 전환]
+                SetUIPhaseState(GamePhase.Night);
+
+                if (nightSceneManager != null)
+                {
+                    nightSceneManager.StartNightPhase();
+                }
             }
             else if (resultUI != null)
             {
                 resultUI.ShowResultPanel(result);
             }
+        }
+    }
+
+    public enum GamePhase
+    {
+        Meeting,   // 낮 회의 (채팅 중심)
+        DayVote,   // 낮 투표 (스킵/확인 버튼 활성화, 밤 버튼 비활성화)
+        Night      // 밤 능력 사용 (스킵 버튼 비활성화, 밤 전용 버튼 활성화)
+    }
+
+    public void SetUIPhaseState(GamePhase phase)
+    {
+        switch (phase)
+        {
+            case GamePhase.Meeting:
+                // [낮 회의] 스킵/투표 UI 끄고 회의 UI 켜기
+                if (skipVoteButton != null) skipVoteButton.gameObject.SetActive(false);
+                if (confirmVoteButton != null) confirmVoteButton.gameObject.SetActive(false);
+                if (skipMeetingButton != null) skipMeetingButton.gameObject.SetActive(true);
+
+                if (nightConfirmButton != null) nightConfirmButton.gameObject.SetActive(false);
+                break;
+
+            case GamePhase.DayVote:
+                // [낮 투표] 투표용 스킵/확인 버튼 활성화, 밤 버튼 비활성화
+                if (skipVoteButton != null) skipVoteButton.gameObject.SetActive(true);
+                if (confirmVoteButton != null) confirmVoteButton.gameObject.SetActive(true);
+                if (skipMeetingButton != null) skipMeetingButton.gameObject.SetActive(false);
+
+                if (nightConfirmButton != null) nightConfirmButton.gameObject.SetActive(false);
+                break;
+
+            case GamePhase.Night:
+                // [밤] 투표 스킵/확인 버튼 비활성화, 밤 전용 버튼 활성화
+                if (skipVoteButton != null) skipVoteButton.gameObject.SetActive(false);
+                if (confirmVoteButton != null) confirmVoteButton.gameObject.SetActive(false);
+                if (skipMeetingButton != null) skipMeetingButton.gameObject.SetActive(false);
+
+                if (nightConfirmButton != null) nightConfirmButton.gameObject.SetActive(true);
+                break;
         }
     }
 }
