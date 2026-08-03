@@ -96,6 +96,6 @@ public class RoleRevealUI : MonoBehaviour
         // 상황 2: Chat 씬 내부의 팝업 창일 경우 -> 팝업 비활성화
         gameObject.SetActive(false);
 
-        SceneManager.LoadScene("Meeting_Scenes");
+        SceneManager.LoadScene("Mafia_Meeting_Scene");
     }
 }

@@ -306,7 +306,14 @@ public class AITalkScheduler : MonoBehaviour
             mentionedParticipants[speaker] = 0;
 
 
-            ChatController.Instance!.AddChat($"[{speaker.Name}] : {chatTarget.content}");
+            // 기존 : ChatController.Instance!.AddChat($"[{speaker.Name}] : {chatTarget.content}");
+            // 변경 : 발신자 이름과 대화 내용을 따로 넘겨서 말풍선으로 생성!
+
+            /*if (ChatController.Instance != null)
+            {
+                ChatController.Instance.AddChat(speaker.Name, chatTarget.content);
+            }*/
+
             // ④ 메시지 생성
             OpenAIMessage message = new OpenAIMessage
             {
@@ -320,6 +327,12 @@ public class AITalkScheduler : MonoBehaviour
 
             // ⑥ UI 표시용 텍스트 추가 (UI 매니저나 채팅 UI 뷰가 있다면 전달만 수행)
             // ChatUI.Instance.ShowMessage(speaker.Name, aiReply);
+
+            // 싱글톤을 사용하여 AI 말풍선 동적 생성
+            if (ChatManager.Instance != null)
+            {
+                ChatManager.Instance.CreateAIMessage(speaker.Name, chatTarget.content);
+            }
 
             Debug.Log($"<color=cyan>[{speaker.Name}]</color> : {aiReply}");
         }
