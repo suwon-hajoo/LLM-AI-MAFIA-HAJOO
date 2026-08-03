@@ -39,6 +39,7 @@ public class NightSceneManager : MonoBehaviour
     private float currentTimer;
     private bool isNightActive = false;
     private Image currentSelectedImage = null;
+    private Task aiTask = null;
 
     private void Start()
     {
@@ -64,6 +65,8 @@ public class NightSceneManager : MonoBehaviour
 
         // 3. 버튼 동적 생성
         GenerateTargetButtons();
+        AINightSkillProcessor aiProcessor = new AINightSkillProcessor();
+        aiTask = aiProcessor.ProcessAllAINightSkillsAsync();
 
         // 4. 밤 타이머 시작
         currentTimer = nightDuration;
@@ -260,9 +263,6 @@ public class NightSceneManager : MonoBehaviour
             uiCoroutine = StartCoroutine(nightResultUI.ShowResultRoutine(myData, target));
         }
 
-        // 2. 💡 [동시 실행 2] AI들의 밤 능력 비동기 통신 처리 즉시 시작
-        AINightSkillProcessor aiProcessor = new AINightSkillProcessor();
-        Task aiTask = aiProcessor.ProcessAllAINightSkillsAsync();
 
         // 3. AI 통신이 끝날 때까지 대기
         while (!aiTask.IsCompleted)
