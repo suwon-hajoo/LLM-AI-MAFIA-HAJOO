@@ -7,7 +7,16 @@ using UnityEngine;
 
 public class AINightSkillProcessor
 {
-    private LLMPrompt llmPrompt = new LLMPrompt();
+    //private LLMPrompt llmPrompt = new LLMPrompt();
+
+    private PromptRepository? promptRepository;
+    private LLMPrompt? llmPrompt;
+
+    public AINightSkillProcessor()
+    {
+        promptRepository = new PromptRepository();
+        llmPrompt = new LLMPrompt(promptRepository);
+    }
 
     private async Task ProcessAINightSkillAsync(ChatService chatService, List<Participant> aliveList, Participant aiPlayer)
     {
@@ -20,6 +29,8 @@ public class AINightSkillProcessor
             // 💡 [추가] AI 1명마다 예외 처리를 감싸서, 한 명의 통신에 실패해도 전체 처리 루프가 멈추지 않고 끝까지 완수되도록 설정
             try
             {
+                if (llmPrompt == null) return;
+
                 var conversation = chatService.GetGameConversationById(aiPlayer.Id);
                 if (conversation == null) return;
 

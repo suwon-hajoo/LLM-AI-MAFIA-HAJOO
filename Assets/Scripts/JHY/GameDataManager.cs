@@ -24,7 +24,11 @@ public class GameDataManager : MonoBehaviour
     private readonly List<Participant> _participants = new List<Participant>();
     public IReadOnlyList<Participant> Participants => _participants;
 
-    private LLMPrompt llmPrompt = new LLMPrompt();
+    //private LLMPrompt llmPrompt = new LLMPrompt();
+    
+    // 💡 [수정] txt 파일 읽기용 Repository 생성 및 LLMPrompt에 주입
+    private PromptRepository promptRepository;
+    private LLMPrompt llmPrompt;
 
     public bool OneDay = false; // 게임 시작 시 첫 째 날 (투표 스킵)
 
@@ -38,6 +42,10 @@ public class GameDataManager : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
+        // 💡 [추가] txt 파일 읽기 로더 및 프롬프트 빌더 초기화
+        promptRepository = new PromptRepository();
+        llmPrompt = new LLMPrompt(promptRepository);
     }
 
     private void Start()

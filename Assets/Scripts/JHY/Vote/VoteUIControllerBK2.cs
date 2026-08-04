@@ -27,9 +27,19 @@ public class VoteUIControllerBK2 : MonoBehaviour
     private Image? currentSelectedImage = null;
     private int selectedTargetId = -1; // -1: 스킵(기권)
 
-    private LLMPrompt llmPrompt = new LLMPrompt();
+    //private LLMPrompt llmPrompt = new LLMPrompt();
+    // 💡 [수정] txt 파일 읽기용 Repository 생성 및 LLMPrompt에 주입
+    private PromptRepository? promptRepository;
+    private LLMPrompt? llmPrompt;
+
     private Dictionary<string, int> voteCounts = new();
     private List<Task> tasks = new();
+
+    private void Awake()
+    {
+        promptRepository = new PromptRepository();
+        llmPrompt = new LLMPrompt(promptRepository);
+    }
 
     private void Start()
     {
@@ -267,6 +277,8 @@ public class VoteUIControllerBK2 : MonoBehaviour
 
     private async Task ProcessAIVote(ChatService chatService, List<Participant> aliveList, Dictionary<string, int> voteCounts, Participant p)
     {
+        if (llmPrompt == null) return;
+
         var conversation = chatService.GetGameConversationById(p.Id);
         if (conversation == null) return;
 
