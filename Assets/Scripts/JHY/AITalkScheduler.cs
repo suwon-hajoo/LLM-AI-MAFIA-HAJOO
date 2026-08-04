@@ -274,7 +274,10 @@ public class AITalkScheduler : MonoBehaviour
     // 💡 2단계: AI 대화 생성 및 ChatService 전파 처리
     private async Task ProcessAIDayChatAsync(Participant speaker)
     {
-        LLMPrompt llmPrompt = new LLMPrompt();
+        //LLMPrompt llmPrompt = new LLMPrompt();
+        PromptRepository repo = new PromptRepository();
+        LLMPrompt llmPrompt = new LLMPrompt(repo);
+
         ChatService chatService = ChatService.GetInstance();
 
         // ① 1단계에서 저장한 AI의 대화 기억 장부(GameConversation) 꺼내기

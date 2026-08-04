@@ -1,0 +1,7 @@
+투표시간이야
+인원으로는 {ALIVE_PLAYERS}가 있어
+너의 이름은 {MY_NAME} 이야 해당 닉네임은 투표하면 안돼
+{TEAM_GOAL}
+투표를 기권하고 싶다면 "is_skip": true 로 작성하고, 누군가에게 투표하려면 "is_skip": false 와 함께 target에 생존자 이름을 정확히 적어줘.
+다음 조건에 맞게 JSON 데이터를 채워서 출력해줘 { "is_skip" : true, "target" : "string" }
+ target의 값에는 투표할 사람의 이름을 적어줘
