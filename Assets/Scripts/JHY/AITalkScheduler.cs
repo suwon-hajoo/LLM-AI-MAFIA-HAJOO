@@ -1,6 +1,7 @@
 #nullable enable
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -285,7 +286,9 @@ public class AITalkScheduler : MonoBehaviour
         if (conversation == null) return;
 
         // ② "성격에 맞게 대화해봐" 지시어 생성
-        string queryPrompt = llmPrompt.GetConversationPrompt();
+        // 💡 [수정] speaker와 전체 참가자 리스트(GameDataManager.Instance.Participants)를 전달!
+        var allParticipants = GameDataManager.Instance.Participants.ToList();
+        string queryPrompt = llmPrompt.GetConversationPrompt(speaker, allParticipants);
 
         // ③ OpenAIChatManager로 LLM API 호출
         string? aiReply = await OpenAIChatManager.Instance!.SendChatRequest(conversation, queryPrompt, LLMResponseFormat.JsonObject);
