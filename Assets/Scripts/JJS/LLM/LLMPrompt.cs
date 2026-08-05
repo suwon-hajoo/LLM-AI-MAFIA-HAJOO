@@ -69,9 +69,36 @@ public class LLMPrompt
             .Replace("{PERSONALITY_STATS}", statsSb.ToString());
     }
 
-    public string GetConversationPrompt()
+    // [낮 대화 프롬프트] 지침 ➔ [게임 상황 정보] 순서로 결합
+    public string GetConversationPrompt(Participant participant, List<Participant> participantList)
     {
-        return repository.GetTemplate("ConversationTemplate");
+        string conversationInstructions = repository.GetTemplate("ConversationTemplate");
+        string contextPrompt = GetPhaseContextPrompt(participant, participantList);
+
+        // 💡 지침 뒤에 게임 상황 정보를 배치!
+        return conversationInstructions + "\n\n" + contextPrompt;
+    }
+
+    private string GetPhaseContextPrompt(Participant participant, List<Participant> participantList)
+    {
+        string phaseContextRaw = repository.GetTemplate("PhaseContextTemplate");
+
+        int totalCount = participantList.Count;
+        int aliveCount = participantList.Count(p => p.IsAlive);
+        int deadCount = totalCount - aliveCount;
+
+        string aliveNames = string.Join(", ", participantList.Where(p => p.IsAlive).Select(p => p.Name));
+        string deadNames = deadCount > 0
+            ? string.Join(", ", participantList.Where(p => !p.IsAlive).Select(p => p.Name))
+            : "없음";
+
+        return phaseContextRaw
+            .Replace("{TOTAL_COUNT}", totalCount.ToString())
+            .Replace("{ALIVE_COUNT}", aliveCount.ToString())
+            .Replace("{DEAD_COUNT}", deadCount.ToString())
+            .Replace("{MY_NAME}", participant.Name)
+            .Replace("{ALIVE_PLAYERS}", GetAliveParticipantString(participantList))
+            .Replace("{DEAD_PLAYERS}", GetDeadParticipantString(participantList));
     }
 
     private string GetAliveParticipantString(List<Participant> participants)
@@ -79,6 +106,12 @@ public class LLMPrompt
         return string.Join(", ", participants.Where(p => p.IsAlive).Select(p => p.Name));
     }
 
+    private string GetDeadParticipantString(List<Participant> participants)
+    {
+        return string.Join(", ", participants.Where(p => !p.IsAlive).Select(p => p.Name));
+    }
+
+    // [낮 투표 프롬프트] 지침 ➔ [게임 상황 정보] 순서로 결합
     public string GetVotePrompt(Participant participant, List<Participant> participantList)
     {
         string rawTemplate = repository.GetTemplate("VoteTemplate");
@@ -91,19 +124,29 @@ public class LLMPrompt
             _ => ""
         };
 
-        return rawTemplate
-            .Replace("{ALIVE_PLAYERS}", GetAliveParticipantString(participantList))
+        string voteInstructions = rawTemplate
             .Replace("{MY_NAME}", participant.Name)
             .Replace("{TEAM_GOAL}", teamGoal);
+
+        string contextPrompt = GetPhaseContextPrompt(participant, participantList);
+
+        // 투표 지침 뒤에 게임 상황 정보를 배치!
+        return contextPrompt + "\n\n" + voteInstructions;
     }
 
+    // [밤 능력 프롬프트] 지침 ➔ [게임 상황 정보] 순서로 결합
     public string GetAbilityPrompt(Participant participant, List<Participant> participantList)
     {
         string rawTemplate = repository.GetTemplate("AbilityTemplate");
 
-        return rawTemplate
-            .Replace("{ALIVE_PLAYERS}", GetAliveParticipantString(participantList))
+        string abilityInstructions = rawTemplate
+            .Replace("{MY_NAME}", participant.Name)
             .Replace("{ABILITY_DESC}", participant.Role.Description);
+
+        string contextPrompt = GetPhaseContextPrompt(participant, participantList);
+
+        // 능력 지침 뒤에 게임 상황 정보를 배치!
+        return contextPrompt + "\n\n" + abilityInstructions;
     }
 
     // JSON 파싱 메서드들 (동일하게 유지)

@@ -1,0 +1,5 @@
+[현재 게임 상황 정보]
+- 전체 참가자: {TOTAL_COUNT}명 | 생존: {ALIVE_COUNT}명 | 사망: {DEAD_COUNT}명
+- 생존 플레이어 목록: {ALIVE_PLAYERS}
+- 사망 플레이어 목록: {DEAD_PLAYERS}
+- 너의 이름 : {MY_NAME}
