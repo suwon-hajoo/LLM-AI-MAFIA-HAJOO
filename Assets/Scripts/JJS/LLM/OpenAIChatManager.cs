@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEditor;
-using UnityEditor.UI;
 using UnityEngine;
 using UnityEngine.Analytics;
 using UnityEngine.Networking;
@@ -22,7 +21,9 @@ public class OpenAIChatManager : MonoBehaviour
 
     void Awake()
     {
+        #if UNITY_EDITOR
         EnvLoader.Load();
+        #endif
         apiKey = EnvLoader.Get("Open_AI_API_Key") ?? "";
         apiUrl = EnvLoader.Get("Open_AI_API_URL") ?? "";
         modelName = EnvLoader.Get("Model_Name") ?? "";

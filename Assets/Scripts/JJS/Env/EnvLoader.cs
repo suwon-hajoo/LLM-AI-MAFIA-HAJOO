@@ -9,6 +9,16 @@ public static class EnvLoader
     private static readonly Dictionary<string, string> EnvVariables = new();
     private static bool _isInitialized = false;
 
+    public static void AddEnvVariable(string key, string value)
+    {
+        EnvVariables.Add(key, value);
+    }
+
+    public static void SetInitialized()
+    {
+        _isInitialized = true;
+    }
+
     public static void Load()
     {
         if (_isInitialized) return;
@@ -45,7 +55,9 @@ public static class EnvLoader
 
     public static string? Get(string key)
     {
+        #if UNITY_EDITOR
         if (!_isInitialized) Load();
+        #endif
         return EnvVariables.TryGetValue(key, out string value) ? value : null;
     }
 }
