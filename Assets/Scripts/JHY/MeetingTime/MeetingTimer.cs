@@ -51,6 +51,13 @@ public class MeetingTimer : MonoBehaviour
         {
             AITalkScheduler.Instance.StartAutoScheduleLoop();
         }
+
+        //  [SystemMessage] 아침 시작 메시지 출력
+        if (GameDataManager.Instance != null)
+        {
+            int currentDay = GameDataManager.Instance.CurrentDay;
+            SystemMessageManager.Instance?.AddDaySystemMessage(currentDay, "아침이 시작되었습니다.");
+        }
     }
 
     public void SkipMetting()

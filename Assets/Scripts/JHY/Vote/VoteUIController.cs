@@ -384,13 +384,22 @@ public class VoteUIController : MonoBehaviour
 
             if (skipCount == maxVotes) isTie = true;
 
+            int currentDay = GameDataManager.Instance.CurrentDay; // [SystemMessage] 현재 날짜 가져오기
+
             if (skipCount >= majorityThreshold || skipCount >= maxVotes)
             {
                 Debug.Log("<color=yellow><b>[최종 결과] 과반수 이상이 건너뛰었습니다.</b></color>");
+
+                // [SystemMessage] 투표 스킵 메시지
+                SystemMessageManager.Instance?.AddDaySystemMessage(currentDay, "과반수 이상의 스킵 투표로 인해 낮 투표를 건너뛰었습니다.");
+
             }
             else if (isTie)
             {
                 Debug.Log("<color=yellow><b>[최종 결과] 동점이 발생하여 무효 처리되었습니다.</b></color>");
+
+                // [SystemMessage] 투표 무효 메시지
+                SystemMessageManager.Instance?.AddDaySystemMessage(currentDay, "동점 투표로 인해 낮 투표를 건너뛰었습니다.");
             }
             else if (maxVotes > 0 && !string.IsNullOrEmpty(topVotedName))
             {
@@ -399,6 +408,9 @@ public class VoteUIController : MonoBehaviour
                 {
                     executedPerson.Die();
                     Debug.Log($"<color=red><b>[최종 결과] {executedPerson.Name} 님이 처형되었습니다!</b></color>");
+
+                    // [SystemMessage] 처형 발생 메시지
+                    SystemMessageManager.Instance?.AddDaySystemMessage(currentDay, $"낮 '{executedPerson.Name}' 님이 투표로 처형당하였습니다.");
                 }
             }
         }
