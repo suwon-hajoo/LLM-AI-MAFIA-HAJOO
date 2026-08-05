@@ -8867,6 +8867,7 @@ GameObject:
   - component: {fileID: 1358708032}
   - component: {fileID: 1358708033}
   - component: {fileID: 1358708034}
+  - component: {fileID: 1358708035}
   m_Layer: 0
   m_Name: ChatManager
   m_TagString: Untagged
@@ -8919,6 +8920,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ChatController
   inputField: {fileID: 1020616338}
   chatManager: {fileID: 1358708033}
+--- !u!114 &1358708035
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1358708031}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0207899b37a9a8d43acc99627a2e7373, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SystemMessageManager
+  chatContentPanel: {fileID: 92002271}
+  systemMessagePrefab: {fileID: 5594446701160273869, guid: eebf7b201da4f454886c5ef2f430adb6, type: 3}
+  chatScrollRect: {fileID: 1265288283}
 --- !u!1 &1379178840
 GameObject:
   m_ObjectHideFlags: 0

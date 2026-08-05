@@ -95,6 +95,10 @@ public class NightSceneManager : MonoBehaviour
             voteScrollRect.verticalNormalizedPosition = 1f;
         }
 
+        // [SystemMessage] 밤 시작 메시지
+        int currentDay = GameDataManager.Instance.CurrentDay;
+        SystemMessageManager.Instance?.AddDaySystemMessage(currentDay, "밤이 시작되었습니다.");
+
         // 3. AI 밤 능력 비동기 수집 시작
         AINightSkillProcessor aiProcessor = new AINightSkillProcessor();
         aiTask = aiProcessor.ProcessAllAINightSkillsAsync();
@@ -268,6 +272,39 @@ public class NightSceneManager : MonoBehaviour
         // 능력 실행
         currentSkill.ExecuteSkill(myData.Id, targetId);
 
+        // [SysteMessage] 내 직업별 결과 메시지 (유저 채팅창에만 출력)
+        if (target != null)
+        {
+            switch (myData.Role.RoleId)
+            {
+                case "Doctor":
+                    SystemMessageManager.Instance?.AddSystemMessage($"[의사] 오늘 밤 '{targetName}' 님을 살리기로 결정하였습니다.");
+                    break;
+
+                case "Police":
+                    bool isMafia = target.Role.Team == Team.Mafia && target.Role.RoleId != "Spy";
+                    string resultStr = isMafia ? "마피아가 맞습니다." : "마피아가 아닙니다.";
+                    SystemMessageManager.Instance?.AddSystemMessage($"[경찰] 조사 결과 '{targetName}' 님은 {resultStr}");
+                    break;
+
+                case "Mafia":
+                    SystemMessageManager.Instance?.AddSystemMessage($"[마피아] 오늘 밤 '{targetName}' 님을 습격하기로 하였습니다.");
+                    break;
+
+                case "Spy":
+                    bool foundMafia = target.Role.RoleId == "Mafia";
+                    if (foundMafia)
+                    {
+                        SystemMessageManager.Instance?.AddSystemMessage($"[스파이] 조사 결과 '{targetName}' 님은 마피아가 맞습니다. (접선 성공)");
+                    }
+                    else
+                    {
+                        SystemMessageManager.Instance?.AddSystemMessage($"[스파이] 조사 결과 '{targetName}' 님은 마피아가 아닙니다.");
+                    }
+                    break;
+            }
+        }
+
         // 연출 및 밤 정산 진입
         StartCoroutine(EndNightPhaseRoutine(target));
     }
@@ -343,6 +380,7 @@ public class NightSceneManager : MonoBehaviour
     {
         int attackId = NightTurnContext.MafiaTargetId;
         int protectId = NightTurnContext.DoctorTargetId;
+        int currentDay = GameDataManager.Instance.CurrentDay; // [SystemMessage] 날짜
 
         if (attackId != -1)
         {
@@ -350,14 +388,20 @@ public class NightSceneManager : MonoBehaviour
 
             if (target != null && target.IsAlive)
             {
-                if (attackId == protectId)
+                if (attackId == protectId) // 의사 세이브 조건
                 {
                     Debug.Log($"<color=cyan>★ [정산 결과] 의사가 '{target.Name}' 님을 치료하여 살아남았습니다!</color>");
+
+                    // 🌟 [추가 위치 1] 의사 세이브 메시지
+                    SystemMessageManager.Instance?.AddDaySystemMessage(currentDay, $"밤 '{target.Name}' 님이 마피아에게 공격당하였지만, 의사로 인해 목숨을 잃지 않았습니다.");
                 }
-                else
+                else // 마피아 살해 성공 조건
                 {
                     target.Die();
                     Debug.Log($"<color=red>★ [정산 결과] {target.Name} 님이 습격당해 사망했습니다.</color>");
+
+                    // 🌟 [추가 위치 2] 마피아 살해 사망 메시지
+                    SystemMessageManager.Instance?.AddDaySystemMessage(currentDay, $"밤 '{target.Name}' 님이 마피아에게 살해당했습니다.");
                 }
             }
         }
@@ -366,6 +410,9 @@ public class NightSceneManager : MonoBehaviour
 
         if (GameDataManager.Instance != null)
         {
+            //  [SystemMessage] 밤 정산 메시지 출력이 다 끝난 후, 다음 날 아침으로 넘어가기 위해 +1 증가!
+            GameDataManager.Instance.CurrentDay++;
+
             GameResult result = GameDataManager.Instance.CheckGameResult();
 
             if (result != GameResult.None)

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 public class GameDataManager : MonoBehaviour
@@ -32,6 +33,9 @@ public class GameDataManager : MonoBehaviour
 
     public bool OneDay = false; // 게임 시작 시 첫 째 날 (투표 스킵)
 
+    // [SystemMessage] 현재 게임의 일차(Day)를 관리하는 변수(기본값: 1일차 시작)
+    public int CurrentDay { get; set; } = 1;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -64,6 +68,9 @@ public class GameDataManager : MonoBehaviour
     public void InitializeAndAssignRoles(string userName)
     {
         _participants.Clear();
+
+        // [SystemMessage] 새 게임 시작 시 일차를 1일차로 리셋!
+        CurrentDay = 1;
 
         // 💡 게임 시작 시 1~7번 메모장 저장 데이터 직접 초기화!
         ResetMemoDataInPlayerPrefs();
