@@ -94,6 +94,8 @@ public class VoteUIController : MonoBehaviour
         tasks.Clear();
         voteCounts.Clear();
 
+         if(confirmVoteButton != null) confirmVoteButton.interactable = true;
+
         if (GameDataManager.Instance.OneDay)
         {
             GameDataManager.Instance.OneDay = false;
@@ -308,7 +310,8 @@ public class VoteUIController : MonoBehaviour
         var conversation = chatService.GetGameConversationById(p.Id);
         if (conversation == null) return;
 
-        string votePrompt = llmPrompt.GetVotePrompt(p, aliveList);
+        var allParticipants = GameDataManager.Instance.Participants.ToList();
+        string votePrompt = llmPrompt.GetVotePrompt(p, allParticipants);
         string? jsonResponse = await OpenAIChatManager.Instance!.SendChatRequest(conversation, votePrompt, LLMResponseFormat.JsonObject);
 
         if (!string.IsNullOrEmpty(jsonResponse))
