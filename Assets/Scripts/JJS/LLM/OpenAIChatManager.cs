@@ -43,6 +43,23 @@ public class OpenAIChatManager : MonoBehaviour
         {
             new() { role = "user", name = "user", content = queryMessage }
         };
+
+        // =====================================================================================
+        // 💡 [LLM 실제 최종 프롬프트] 사람이 읽기 편한 최종 전체 프롬프트 로그 생성
+        // =====================================================================================
+        StringBuilder cleanLogBuilder = new StringBuilder();
+        foreach (var msg in requestMessageList)
+        {
+            // [역할 - 이름] 형태로 보기 좋게 구분선 추가
+            string nameDisplay = string.IsNullOrEmpty(msg.name) ? "" : $" - {msg.name}";
+            cleanLogBuilder.AppendLine($"<color=yellow>[{msg.role}{nameDisplay}]</color>");
+            cleanLogBuilder.AppendLine(msg.content);
+            cleanLogBuilder.AppendLine("--------------------------------------------------");
+        }
+
+        Debug.Log($"<color=magenta>[최종 완성된 전체 프롬프트 대본 (사람 읽기용)]</color>\n{cleanLogBuilder.ToString()}");
+        // =====================================================================================
+
         OpenAIRequest requestData = new()
         {
             model = modelName,
@@ -66,6 +83,11 @@ public class OpenAIChatManager : MonoBehaviour
         };
         string jsonPayload = JsonConvert.SerializeObject(requestData, settings);
         Debug.Log(jsonPayload);
+        /*// Formatting.Indented 옵션을 추가하면 JSON이 예쁘게 정렬되어 출력됩니다! [LLM 전송 편하게 확인]
+        string jsonPayload = JsonConvert.SerializeObject(requestData, Formatting.Indented, settings);*/
+
+        Debug.Log($"<color=cyan>[LLM 최종 전송 데이터]</color>\n{jsonPayload}");
+
         byte[] rawData = Encoding.UTF8.GetBytes(jsonPayload);
 
         using UnityWebRequest request = new(apiUrl, "POST");
