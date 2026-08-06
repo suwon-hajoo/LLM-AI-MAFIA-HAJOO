@@ -388,6 +388,59 @@ public class VoteUIController : MonoBehaviour
             if (skipCount == maxVotes) isTie = true;
 
             int currentDay = GameDataManager.Instance.CurrentDay; // [SystemMessage] 현재 날짜 가져오기
+
+            // =====================================================================================
+            // 💡 [SystemMessage] 투표 득표 현황 요약 (최종 판정 전에 출력)
+            // =====================================================================================
+            List<string> uiVoteDetails = new List<string>();
+            List<string> aiVoteDetails = new List<string>();
+
+            // 득표수가 많은 사람부터 순서대로 정렬하여 리스트에 추가
+            var sortedVotes = voteCounts.OrderByDescending(kvp => kvp.Value);
+
+            foreach (var kvp in sortedVotes)
+            {
+                if (kvp.Value > 0) // 1표 이상 받은 사람만
+                {
+                    // UI용: 기호와 함께 세로 출력을 위한 포맷
+                    uiVoteDetails.Add($"▪ {kvp.Key} : {kvp.Value}표");
+                    // AI용: 기호 없이 심플한 포맷
+                    aiVoteDetails.Add($"'{kvp.Key}' {kvp.Value}표");
+                }
+            }
+
+            // 기권(스킵) 표 추가
+            if (skipCount > 0)
+            {
+                uiVoteDetails.Add($"▪ 기권(스킵) : {skipCount}표");
+                aiVoteDetails.Add($"스킵 {skipCount}표");
+            }
+
+            // UI 출력용 텍스트 (줄바꿈 \n 으로 연결)
+            string joinedUIVoteResult = string.Join("\n", uiVoteDetails);
+
+            // 1. 유저의 시스템 메시지 채팅창에 득표 현황 출력
+            SystemMessageManager.Instance?.AddDaySystemMessage(currentDay, $"투표 득표 현황\n{joinedUIVoteResult}");
+
+            // AI 전용 텍스트 (쉼표로 연결)
+            string joinedAIVoteResult = string.Join(", ", aiVoteDetails);
+
+            // 2. 살아있는 AI들의 대화 장부에 득표 현황 기록
+            OpenAIMessage voteSummaryMsg = new OpenAIMessage
+            {
+                role = LLMRole.System,
+                name = "시스템",
+                content = $"[{currentDay}일차 투표 득표 현황] {joinedAIVoteResult}"
+            };
+
+            ChatService chatService = ChatService.GetInstance();
+            foreach (var p in GameDataManager.Instance.Participants.Where(p => p.IsAI && p.IsAlive))
+            {
+                chatService.AddMessageById(p.Id, voteSummaryMsg);
+            }
+            // =====================================================================================
+
+
             string voteLogMessage = ""; // AI에게 보낼 시스템 로그 메시지 변수
 
             if (skipCount >= majorityThreshold || skipCount >= maxVotes)
@@ -424,7 +477,6 @@ public class VoteUIController : MonoBehaviour
             // [AI SystemMessage] 판정된 투표 결과를 살아있는 AI들의 대화 장부에 일괄 삽입
             if (!string.IsNullOrEmpty(voteLogMessage))
             {
-                ChatService chatService = ChatService.GetInstance();
                 OpenAIMessage voteSysMsg = new OpenAIMessage { role = LLMRole.System, name = "시스템", content = voteLogMessage };
 
                 foreach (var p in GameDataManager.Instance.Participants.Where(p => p.IsAI && p.IsAlive))
