@@ -388,6 +388,7 @@ public class VoteUIController : MonoBehaviour
             if (skipCount == maxVotes) isTie = true;
 
             int currentDay = GameDataManager.Instance.CurrentDay; // [SystemMessage] 현재 날짜 가져오기
+            string voteLogMessage = ""; // AI에게 보낼 시스템 로그 메시지 변수
 
             if (skipCount >= majorityThreshold || skipCount >= maxVotes)
             {
@@ -395,6 +396,7 @@ public class VoteUIController : MonoBehaviour
 
                 // [SystemMessage] 투표 스킵 메시지
                 SystemMessageManager.Instance?.AddDaySystemMessage(currentDay, "과반수 이상의 스킵 투표로 인해 낮 투표를 건너뛰었습니다.");
+                voteLogMessage = $"[{currentDay}일차 낮 투표 결과] 과반수 스킵으로 무효 처리되었습니다."; // [AI SystemMessage]
 
             }
             else if (isTie)
@@ -403,6 +405,7 @@ public class VoteUIController : MonoBehaviour
 
                 // [SystemMessage] 투표 무효 메시지
                 SystemMessageManager.Instance?.AddDaySystemMessage(currentDay, "동점 투표로 인해 낮 투표를 건너뛰었습니다.");
+                voteLogMessage = $"[{currentDay}일차 낮 투표 결과] 동점표가 나와 투표가 무효 처리되었습니다."; // [AI SystemMessage]
             }
             else if (maxVotes > 0 && !string.IsNullOrEmpty(topVotedName))
             {
@@ -414,6 +417,19 @@ public class VoteUIController : MonoBehaviour
 
                     // [SystemMessage] 처형 발생 메시지
                     SystemMessageManager.Instance?.AddDaySystemMessage(currentDay, $"낮 '{executedPerson.Name}' 님이 투표로 처형당하였습니다.");
+                    voteLogMessage = $"[{currentDay}일차 낮 투표 결과] '{executedPerson.Name}' 님이 투표로 처형당했습니다."; // [AI SystemMessage]
+                }
+            }
+
+            // [AI SystemMessage] 판정된 투표 결과를 살아있는 AI들의 대화 장부에 일괄 삽입
+            if (!string.IsNullOrEmpty(voteLogMessage))
+            {
+                ChatService chatService = ChatService.GetInstance();
+                OpenAIMessage voteSysMsg = new OpenAIMessage { role = LLMRole.System, name = "시스템", content = voteLogMessage };
+
+                foreach (var p in GameDataManager.Instance.Participants.Where(p => p.IsAI && p.IsAlive))
+                {
+                    chatService.AddMessageById(p.Id, voteSysMsg);
                 }
             }
         }

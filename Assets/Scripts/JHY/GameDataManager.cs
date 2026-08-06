@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
@@ -138,6 +139,20 @@ public class GameDataManager : MonoBehaviour
         // 🔥 [1번 단계 실전 적용]: 역할 배정이 끝난 직후 AI 대화 DB(ChatData) 개설
         // ========================================================================
         InitializeAIChatData();
+
+        // 💡 [AI SystemMessage] 1일차 아침 시작 알림을 AI들에게 전송
+        ChatService chatService = ChatService.GetInstance();
+        OpenAIMessage morningMsg = new OpenAIMessage
+        {
+            role = LLMRole.System,
+            name = "시스템",
+            content = $"[1일차 아침이 밝았습니다. 낮 회의를 시작합니다.]"
+        };
+
+        foreach (var p in _participants.Where(p => p.IsAI))
+        {
+            chatService.AddMessageById(p.Id, morningMsg);
+        }
 
 
         // 💡 [핵심 추가] AI와 성격 스탯이 모두 생성된 직후 스케줄러 스탯 캐싱 시작!
