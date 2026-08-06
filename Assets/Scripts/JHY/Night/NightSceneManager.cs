@@ -99,6 +99,20 @@ public class NightSceneManager : MonoBehaviour
         int currentDay = GameDataManager.Instance.CurrentDay;
         SystemMessageManager.Instance?.AddDaySystemMessage(currentDay, "밤이 시작되었습니다.");
 
+        // [AI SystemMessage] AI들에게 밤이 시작되었음을 알림
+        ChatService chatService = ChatService.GetInstance();
+        OpenAIMessage nightStartMsg = new OpenAIMessage
+        {
+            role = LLMRole.System,
+            name = "시스템",
+            content = $"[{currentDay}일차 밤이 시작되었습니다. 각자의 직업 능력을 사용할 시간입니다.]"
+        };
+
+        foreach (var p in GameDataManager.Instance.Participants.Where(p => p.IsAI && p.IsAlive))
+        {
+            chatService.AddMessageById(p.Id, nightStartMsg);
+        }
+
         // 3. AI 밤 능력 비동기 수집 시작
         AINightSkillProcessor aiProcessor = new AINightSkillProcessor();
         aiTask = aiProcessor.ProcessAllAINightSkillsAsync();
@@ -382,6 +396,8 @@ public class NightSceneManager : MonoBehaviour
         int protectId = NightTurnContext.DoctorTargetId;
         int currentDay = GameDataManager.Instance.CurrentDay; // [SystemMessage] 날짜
 
+        string nightLogMessage = $"[{currentDay}일차 밤 결과] 아무도 사망하지 않았습니다."; // [AI SystemMessage] 기본 메시지 설정
+
         if (attackId != -1)
         {
             Participant target = GameDataManager.Instance.Participants.FirstOrDefault(p => p.Id == attackId);
@@ -394,6 +410,8 @@ public class NightSceneManager : MonoBehaviour
 
                     // 🌟 [추가 위치 1] 의사 세이브 메시지
                     SystemMessageManager.Instance?.AddDaySystemMessage(currentDay, $"밤 '{target.Name}' 님이 마피아에게 공격당하였지만, 의사로 인해 목숨을 잃지 않았습니다.");
+
+                    nightLogMessage = $"[{currentDay}일차 밤 결과] 마피아의 습격이 있었으나, 의사의 치료로 아무도 사망하지 않았습니다."; // [AI SystemMessage]
                 }
                 else // 마피아 살해 성공 조건
                 {
@@ -402,8 +420,18 @@ public class NightSceneManager : MonoBehaviour
 
                     // 🌟 [추가 위치 2] 마피아 살해 사망 메시지
                     SystemMessageManager.Instance?.AddDaySystemMessage(currentDay, $"밤 '{target.Name}' 님이 마피아에게 살해당했습니다.");
+                    nightLogMessage = $"[{currentDay}일차 밤 결과] '{target.Name}' 님이 마피아에게 살해당했습니다."; // [AI SystemMessage]
                 }
             }
+        }
+
+        // [AI SystemMessage] 밤 정산 결과를 살아있는 AI들에게 전송
+        ChatService chatService = ChatService.GetInstance();
+        OpenAIMessage nightResultSysMsg = new OpenAIMessage { role = LLMRole.System, name = "시스템", content = nightLogMessage };
+
+        foreach (var p in GameDataManager.Instance.Participants.Where(p => p.IsAI && p.IsAlive))
+        {
+            chatService.AddMessageById(p.Id, nightResultSysMsg);
         }
 
         NightTurnContext.Reset();
@@ -412,6 +440,20 @@ public class NightSceneManager : MonoBehaviour
         {
             //  [SystemMessage] 밤 정산 메시지 출력이 다 끝난 후, 다음 날 아침으로 넘어가기 위해 +1 증가!
             GameDataManager.Instance.CurrentDay++;
+
+            // [AI SystemMessage] 날짜가 갱신된 후, "다음 날 아침 시작" 알림을 전송
+            int newDay = GameDataManager.Instance.CurrentDay;
+            OpenAIMessage newMorningMsg = new OpenAIMessage
+            {
+                role = LLMRole.System,
+                name = "시스템",
+                content = $"[{newDay}일차 아침이 밝았습니다. 간밤의 결과를 확인하고 다시 낮 회의를 시작합니다.]"
+            };
+
+            foreach (var p in GameDataManager.Instance.Participants.Where(p => p.IsAI && p.IsAlive))
+            {
+                chatService.AddMessageById(p.Id, newMorningMsg);
+            }
 
             GameResult result = GameDataManager.Instance.CheckGameResult();
 
