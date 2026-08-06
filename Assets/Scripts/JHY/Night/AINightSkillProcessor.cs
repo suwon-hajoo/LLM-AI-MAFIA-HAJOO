@@ -35,7 +35,8 @@ public class AINightSkillProcessor
                 if (conversation == null) return;
 
                 // 2. 능력 사용 프롬프트 생성
-                string abilityPrompt = llmPrompt.GetAbilityPrompt(aiPlayer, aliveList);
+                var allParticipants = GameDataManager.Instance.Participants.ToList();
+                string abilityPrompt = llmPrompt.GetAbilityPrompt(aiPlayer, allParticipants);
 
                 // 3. LLM에 JSON 형태 결과 요청
                 string? jsonResponse = await OpenAIChatManager.Instance!.SendChatRequest(conversation, abilityPrompt, LLMResponseFormat.JsonObject);
