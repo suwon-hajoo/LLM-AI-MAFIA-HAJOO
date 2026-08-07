@@ -1230,11 +1230,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e3e691b6162754699963b885e53688d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Krykftn.FigmaToUnity::Krykftn.FigmaToUnity.FigmaImportInfo
-  fileKey: plugin
-  pageName: 
-  screenId: 2:455
-  screenName: Game Result
-  importedAtUtc: 2026-07-31T01:18:59.3504858Z
 --- !u!114 &267606589
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6114,6 +6109,7 @@ GameObject:
   - component: {fileID: 1020616338}
   - component: {fileID: 1020616339}
   - component: {fileID: 1020616340}
+  - component: {fileID: 1020616341}
   m_Layer: 0
   m_Name: Input
   m_TagString: Untagged
@@ -6316,6 +6312,19 @@ MonoBehaviour:
   inputRectTransform: {fileID: 1020616335}
   baseHeight: 47
   lineHeight: 16
+--- !u!114 &1020616341
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1020616334}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc33a39070010f94fb1c2dd721c1286d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: WebGLInput::WebGLSupport.WebGLInput
+  showHtmlElement: 0
 --- !u!1 &1079375945
 GameObject:
   m_ObjectHideFlags: 0
@@ -11398,11 +11407,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e3e691b6162754699963b885e53688d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Krykftn.FigmaToUnity::Krykftn.FigmaToUnity.FigmaImportInfo
-  fileKey: plugin
-  pageName: 
-  screenId: 2:725
-  screenName: Meeting Phase
-  importedAtUtc: 2026-07-31T01:03:20.3682115Z
 --- !u!114 &1628201022
 MonoBehaviour:
   m_ObjectHideFlags: 0
