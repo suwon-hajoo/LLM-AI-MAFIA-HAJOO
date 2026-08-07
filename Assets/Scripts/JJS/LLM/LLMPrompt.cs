@@ -45,28 +45,16 @@ public class LLMPrompt
     {
         string rawTemplate = repository.GetTemplate("SystemTemplate");
 
-        // 가변 동적 문자열 가공
         StringBuilder rolesSb = new();
         foreach (var gameRole in gameRoles)
         {
             rolesSb.AppendLine($"{gameRole.RoleName} : {gameRole.Description}");
         }
 
-        StringBuilder statsSb = new();
-        foreach (var kvp in participant.Personality.Stats)
-        {
-            statsSb.AppendLine($"{kvp.Key.StatName}의 값은 {kvp.Value} 이고 이 수치의 의미는 {kvp.Key.Description} 야");
-        }
 
         // txt 파일에서 읽어온 템플릿에 데이터 치환(Replace) 적용
         return rawTemplate
-            .Replace("{ROLE_TIP}", GetTip(participant.Role))
-            .Replace("{TEAM_NAME}", TeamToString(participant.Role.Team))
-            .Replace("{TEAM_PURPOSE}", TeamPurpose(participant.Role.Team))
-            .Replace("{ROLE_NAME}", participant.Role.RoleName)
-            .Replace("{ROLE_DESC}", participant.Role.Description)
-            .Replace("{ALL_ROLES_LIST}", rolesSb.ToString())
-            .Replace("{PERSONALITY_STATS}", statsSb.ToString());
+            .Replace("{ALL_ROLES_LIST}", rolesSb.ToString());
     }
 
     // [낮 대화 프롬프트] 지침 ➔ [게임 상황 정보] 순서로 결합
@@ -92,13 +80,26 @@ public class LLMPrompt
             ? string.Join(", ", participantList.Where(p => !p.IsAlive).Select(p => p.Name))
             : "없음";
 
+        // 가변 동적 문자열 가공
+        StringBuilder statsSb = new();
+        foreach (var kvp in participant.Personality.Stats)
+        {
+            statsSb.AppendLine($"{kvp.Key.StatName} : {kvp.Value}점  ({kvp.Key.Description})");
+        }
+
         return phaseContextRaw
             .Replace("{TOTAL_COUNT}", totalCount.ToString())
             .Replace("{ALIVE_COUNT}", aliveCount.ToString())
             .Replace("{DEAD_COUNT}", deadCount.ToString())
             .Replace("{MY_NAME}", participant.Name)
             .Replace("{ALIVE_PLAYERS}", GetAliveParticipantString(participantList))
-            .Replace("{DEAD_PLAYERS}", GetDeadParticipantString(participantList));
+            .Replace("{DEAD_PLAYERS}", GetDeadParticipantString(participantList))
+            .Replace("{ROLE_TIP}", GetTip(participant.Role))
+            .Replace("{TEAM_NAME}", TeamToString(participant.Role.Team))
+            .Replace("{TEAM_PURPOSE}", TeamPurpose(participant.Role.Team))
+            .Replace("{ROLE_NAME}", participant.Role.RoleName)
+            .Replace("{ROLE_DESC}", participant.Role.Description)
+            .Replace("{PERSONALITY_STATS}", statsSb.ToString());
     }
 
     private string GetAliveParticipantString(List<Participant> participants)
