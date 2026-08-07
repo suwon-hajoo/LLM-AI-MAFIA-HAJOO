@@ -22,7 +22,7 @@ public class OpenAIChatManager : MonoBehaviour
     void Start()
     {
         apiUrl = "https://llm-proxy.wjdwntls1225.workers.dev/";
-        modelName = "google/gemma-4-31b-it";
+        modelName = "openai/gpt-oss-120b";
     }
 
     public async Task<string?> SendChatRequest(GameConversation gameConversation, string queryMessage, string? response_format = null, bool enbaleThinking = true)
