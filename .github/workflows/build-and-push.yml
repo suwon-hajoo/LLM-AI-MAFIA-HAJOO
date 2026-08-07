@@ -1,0 +1,43 @@
+name: Unity Build and Push to Another Repo
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+  UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+  UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+  
+jobs:
+  buildAndDeploy:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Cache Library
+        uses: actions/cache@v3
+        with:
+          path: Library
+          key: Library-${{ hashFiles('ProjectSettings/ProjectVersion.txt') }}
+          restore-keys: |
+            Library-
+      
+      - name: Build Unity Project
+        uses: game-ci/unity-builder@v4
+        with:
+          targetPlatform: WebGL
+          customParameters: -executeMethod WebBuilderScript.Build
+      
+      - name: Push Build to Another Repository
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.TARGET_REPO_TOKEN }}
+        with:
+          source-directory: "build/WebGL"
+          destination-github-username: 'suwon-hajoo'
+          destination-repository-name: 'suwon-hajoo.github.io'
+          target-branch: 'main'
+          commit-message: "Update Unity WebGL Build"
