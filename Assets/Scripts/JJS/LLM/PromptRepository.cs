@@ -13,20 +13,14 @@ public class PromptRepository
 
     public void LoadAllTemplates()
     {
-        string basePath = Path.Combine(Application.streamingAssetsPath, "Prompts");
-
-        if (!Directory.Exists(basePath))
-        {
-            Debug.LogError($"[PromptRepository] 경로가 존재하지 않습니다: {basePath}");
-            return;
-        }
+        TextAsset[] allPrompt = Resources.LoadAll<TextAsset>("Prompts");
 
         templateCache.Clear();
-        foreach (string filePath in Directory.GetFiles(basePath, "*.txt"))
+        foreach (TextAsset prompt in allPrompt)
         {
-            string fileName = Path.GetFileNameWithoutExtension(filePath);
-            string content = File.ReadAllText(filePath);
-            templateCache[fileName] = content;
+            string fileName = prompt.name;
+            string fileContent = prompt.text;
+            templateCache[fileName] = fileContent;
         }
     }
 

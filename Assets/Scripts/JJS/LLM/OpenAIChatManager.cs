@@ -1,14 +1,9 @@
 #nullable enable
 using Newtonsoft.Json;
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.Analytics;
 using UnityEngine.Networking;
 
 
@@ -21,18 +16,13 @@ public class OpenAIChatManager : MonoBehaviour
 
     void Awake()
     {
-        #if UNITY_EDITOR
-        EnvLoader.Load();
-        #endif
-        apiKey = EnvLoader.Get("Open_AI_API_Key") ?? "";
-        apiUrl = EnvLoader.Get("Open_AI_API_URL") ?? "";
-        modelName = EnvLoader.Get("Model_Name") ?? "";
         Instance ??= this;
     }
 
     void Start()
     {
-        
+        apiUrl = "https://llm-proxy.wjdwntls1225.workers.dev/";
+        modelName = "google/gemma-4-31b-it";
     }
 
     public async Task<string?> SendChatRequest(GameConversation gameConversation, string queryMessage, string? response_format = null, bool enbaleThinking = true)
@@ -90,14 +80,10 @@ public class OpenAIChatManager : MonoBehaviour
         Debug.Log($"<color=cyan>[LLM 최종 전송 데이터]</color>\n{jsonPayload}");
 
         byte[] rawData = Encoding.UTF8.GetBytes(jsonPayload);
-
         using UnityWebRequest request = new(apiUrl, "POST");
 
         request.uploadHandler = new UploadHandlerRaw(rawData);
         request.downloadHandler = new DownloadHandlerBuffer();
-
-        request.SetRequestHeader("Content-Type", "application/json");
-        request.SetRequestHeader("Authorization", "Bearer " + apiKey);
 
         var operation = request.SendWebRequest();
         while (!operation.isDone)
