@@ -70,6 +70,15 @@ public class AINightSkillProcessor
                             chatService.AddMessageByRole(targetPerson.Role.RoleId, mafiaMessage);
                             //chatService.AddMessageByTeam(Team.Mafia, systemNotification); // 모든 마피아 팀에게 전달
                             Debug.Log($"<color=magenta>[스파이 접촉 완료]</color> [{targetPerson.Name}](마피아) 장부에 스파이 정체 통보 추가");
+
+                            // 💡 [System Message] 플레이어가 마피아 팀일 경우 UI 화면에 시스템 메시지 띄우기
+                            Participant localPlayer = GameDataManager.Instance.Participants.FirstOrDefault(p => p.IsAI == false);
+                            if (localPlayer != null && localPlayer.Role.Team == Team.Mafia)
+                            {
+                                SystemMessageManager.Instance?.AddSystemMessage($"[접선 알림] 스파이 '{aiPlayer.Name}' 님이 마피아 팀과 접선에 성공했습니다!");
+                            }
+
+
                         }
 
                         // 6. 능력 결과 텍스트 도출 및 해당 AI(스파이 본인 등) 단독 통보
