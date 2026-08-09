@@ -81,7 +81,7 @@ public class GameResultUIController : MonoBehaviour
             foreach (var p in participants)
             {
                 string status = p.IsAlive ? "(생존)" : "<color=red>(사망)</color>";
-                string userTag = p.IsAI ? "" : " ★나";
+                string userTag = p.IsAI ? "" : " (본인)";
                 roleSummary += $"{p.Name}{userTag} : {p.Role.RoleName} {status}\n";
             }
 
