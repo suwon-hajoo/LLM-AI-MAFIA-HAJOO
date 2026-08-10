@@ -10,6 +10,9 @@
 - 직업 능력 : {ROLE_DESC}
 - 직업 팁 : {ROLE_TIP}
 
+[직업 시스템 알림]
+{PRIVATE_SYSTEM_LOGS}
+
 [캐릭터 성격 능력치 (1~100)]
 {PERSONALITY_STATS}
  -- 위 수치가 높은 특성일수록 대사 톤과 행동 결정에 최우선으로 반영하여 연기하세요. --

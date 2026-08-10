@@ -93,6 +93,22 @@ public class LLMPrompt
             ? string.Join(", ", participantList.Where(p => !p.IsAlive).Select(p => p.Name))
             : "없음";
 
+        // [AI System] ChatService에서 해당 참가자의 비밀 일지 텍스트를 쭉 가져와서 조립
+        StringBuilder privateLogsSb = new StringBuilder();
+        var privateLogs = ChatService.GetInstance().GetPrivateSystemLogsById(participant.Id);
+
+        if (privateLogs != null && privateLogs.Count > 0)
+        {
+            foreach (string log in privateLogs)
+            {
+                privateLogsSb.AppendLine(log);
+            }
+        }
+        else
+        {
+            privateLogsSb.AppendLine("수신된 직업 시스템 알림이 없습니다.");
+        }
+
         // 가변 동적 문자열 가공
         StringBuilder statsSb = new();
         foreach (var kvp in participant.Personality.Stats)
@@ -113,7 +129,8 @@ public class LLMPrompt
             .Replace("{ROLE_NAME}", participant.Role.RoleName)
             .Replace("{ROLE_DESC}", participant.Role.Description)
             .Replace("{PERSONALITY_STATS}", statsSb.ToString())
-            .Replace("{CURRENT_DAY}", currentDay.ToString());
+            .Replace("{CURRENT_DAY}", currentDay.ToString())
+            .Replace("{PRIVATE_SYSTEM_LOGS}", privateLogsSb.ToString()); //
     }
 
     private string GetAliveParticipantString(List<Participant> participants)
