@@ -54,21 +54,24 @@ public class AINightSkillProcessor
                         INightSkill aiSkill = NightSkillFactory.CreateSkill(aiPlayer.Role.RoleId);
                         aiSkill.ExecuteSkill(aiPlayer.Id, targetPerson.Id);
 
+                        int currentDay = GameDataManager.Instance.CurrentDay;
+
                         // 5. [스파이 특수 처리] 접촉 대상이 마피아인 경우 마피아 장부에도 알림 주입
                         if (aiPlayer.Role.RoleId == "Spy" && targetPerson.Role.RoleId == "Mafia")
                         {
                             string mafiaNotificationContent = $"[조직원 접촉 알림] 스파이인 '{aiPlayer.Name}' 님이 당신에게 접촉했습니다. 서로 마피아 팀임을 확인했습니다.";
 
-                            OpenAIMessage mafiaMessage = new OpenAIMessage
+                            /*OpenAIMessage mafiaMessage = new OpenAIMessage
                             {
                                 role = LLMRole.System,
                                 name = "시스템",
                                 content = mafiaNotificationContent
-                            };
+                            };*/
 
                             // 마피아 장부에 비밀 기록 추가
-                            chatService.AddMessageByRole(targetPerson.Role.RoleId, mafiaMessage);
-                            //chatService.AddMessageByTeam(Team.Mafia, systemNotification); // 모든 마피아 팀에게 전달
+                            /*chatService.AddMessageByRole(targetPerson.Role.RoleId, mafiaMessage);
+                            //chatService.AddMessageByTeam(Team.Mafia, systemNotification); // 모든 마피아 팀에게 전달*/
+                            chatService.AddPrivateSystemLogById(targetPerson.Id, mafiaNotificationContent);
                             Debug.Log($"<color=magenta>[스파이 접촉 완료]</color> [{targetPerson.Name}](마피아) 장부에 스파이 정체 통보 추가");
 
                             // 💡 [System Message] 플레이어가 마피아 팀일 경우 UI 화면에 시스템 메시지 띄우기
@@ -86,14 +89,15 @@ public class AINightSkillProcessor
 
                         if (!string.IsNullOrEmpty(resultMessageContent))
                         {
-                            OpenAIMessage systemNotification = new OpenAIMessage
+                            /*OpenAIMessage systemNotification = new OpenAIMessage
                             {
                                 role = LLMRole.System,
                                 name = "시스템",
                                 content = resultMessageContent
-                            };
+                            };*/
 
-                            chatService.AddMessageById(aiPlayer.Id, systemNotification);
+                            //chatService.AddMessageById(aiPlayer.Id, systemNotification);
+                            chatService.AddPrivateSystemLogById(aiPlayer.Id, $"[{currentDay}일차] {resultMessageContent}");
                             Debug.Log($"<color=cyan>[비밀 통보 완료]</color> [{aiPlayer.Name}] 전용 기록: {resultMessageContent}");
                         }
                     }

@@ -89,4 +89,30 @@ public class ChatService
             chatData.AddMessage(fixedMessage);
         }
     }
+
+    // [AI System] 특정 AI의 비밀 일지에 텍스트 추가하기
+    public void AddPrivateSystemLogById(int participantId, string logMessage)
+    {
+        foreach (ChatData chatData in ChatDataList)
+        {
+            if (chatData.participant.Id == participantId)
+            {
+                chatData.AddPrivateLog(logMessage);
+                return;
+            }
+        }
+    }
+
+    // [AI System] 특정 AI의 비밀 일지 텍스트 리스트 가져오기 (프롬프트 조립할 때 사용)
+    public List<string>? GetPrivateSystemLogsById(int participantId)
+    {
+        foreach (ChatData chatData in ChatDataList)
+        {
+            if (chatData.participant.Id == participantId)
+            {
+                return chatData.PrivateSystemLogs;
+            }
+        }
+        return null;
+    }
 }
